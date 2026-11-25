@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f4d3f">
+<title>Maraketo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Maraketo">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{
+  --bg:#fff8ec; --card:#ffffff; --ink:#2b2b2b; --mut:#7a7468; --line:#e6dcc8;
+  --deep:#1f4d3f; --mid:#2e7d5b; --lime:#a8d672; --soft:#eaf4ee; --soft2:#f7f2e6;
+  --p:#3b82c4; --g:#f2994a; --c:#8bc34a; --warn:#d9534f; --blue-soft:#e3eef8; --shadow:0 2px 0 #eadfc8;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#13201a; --card:#1c2b24; --ink:#eee8da; --mut:#a79f8e; --line:#2f4339; --soft:#223a30; --soft2:#243a30; --blue-soft:#1f3347; --shadow:0 2px 0 #0e1813; }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.4;padding-bottom:84px}
+header{background:linear-gradient(135deg,var(--deep),var(--mid));color:#fff;padding:18px 16px 16px}
+header .in{max-width:760px;margin:0 auto}
+header h1{margin:0;font-size:22px;letter-spacing:.2px}
+header p{margin:4px 0 0;color:var(--lime);font-size:13px}
+main{max-width:760px;margin:0 auto;padding:16px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:10}
+nav .in{display:flex;max-width:760px;width:100%}
+nav button{flex:1;min-width:0;border:0;background:none;color:var(--mut);padding:8px 1px 10px;font:inherit;font-size:11px;cursor:pointer}
+nav button .ic{display:block;font-size:21px;line-height:1.2}
+nav button.on{color:var(--mid);font-weight:700}
+h2{font-size:18px;margin:6px 0 12px}
+h3{font-size:15px;margin:18px 0 8px;color:var(--deep)}
+@media (prefers-color-scheme: dark){h3{color:var(--lime)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.row{display:flex;align-items:center;gap:10px}
+.sp{justify-content:space-between}
+.mut{color:var(--mut);font-size:13px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 14px;font:inherit;cursor:pointer}
+.btn.pri{background:var(--mid);border-color:var(--mid);color:#fff;font-weight:700}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.danger{color:var(--warn)}
+input,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--mid);padding:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:12px;font-weight:700;color:#fff;border-radius:999px;padding:3px 9px}
+.chip.k{background:var(--deep)} .chip.p{background:var(--p)} .chip.g{background:var(--g)} .chip.c{background:var(--c)}
+.datebar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.datebar .mid{text-align:center;flex:1}
+.datebar .big{font-size:20px;font-weight:800}
+.banner{background:var(--blue-soft);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:14px}
+.bar{height:10px;background:var(--soft2);border-radius:999px;overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--mid);border-radius:999px;transition:width .25s}
+.meal{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:start}
+.meal .emo{font-size:30px;line-height:1;text-align:center;padding-top:4px}
+.meal .lab{font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--mid);text-transform:uppercase}
+.meal .nm{font-weight:700;font-size:16px}
+.meal .ing{font-size:13px;color:var(--mut);margin-top:2px}
+.meal.done{background:var(--soft)}
+.meal select{width:100%;margin-top:6px;font-size:14px;padding:7px 8px}
+.macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.macros div{background:var(--soft2);border-radius:12px;padding:8px 2px}
+.macros b{display:block;font-size:19px}
+.macros span{font-size:11px;color:var(--mut)}
+.warn{color:var(--warn);font-size:13px;margin-top:6px}
+.water{display:flex;gap:6px;flex-wrap:wrap}
+.water button{font-size:24px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:4px 8px;cursor:pointer;opacity:.35}
+.water button.on{opacity:1;background:var(--blue-soft)}
+.week h3{margin-top:14px}
+.day{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;cursor:pointer;padding:10px 12px}
+.day .dd{text-align:center;font-weight:800;line-height:1.1}
+.day .dd small{display:block;font-size:11px;color:var(--mut);font-weight:600}
+.day .meals{font-size:12.5px;color:var(--mut)}
+.day .meals b{color:var(--ink);font-weight:600}
+.day .right{text-align:right;font-size:13px}
+.day.today{border:2px solid var(--mid)}
+.day.sel{background:var(--soft)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:12px;color:var(--mut)}
+.good{color:var(--mid)} .bad{color:var(--warn)}
+form.add{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+form.add .full{grid-column:1/-1}
+form.add label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
+form.add input{width:100%}
+svg.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--mut);font-size:11px}
+.wrow{display:grid;grid-template-columns:70px 90px 1fr 36px;gap:6px;align-items:center;margin-bottom:6px}
+.wrow input{width:100%;padding:7px 8px}
+.shop-cat{margin-top:12px}
+.shop-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.shop-item .q{margin-left:auto;font-weight:700;color:var(--mid);text-align:right;font-size:14px}
+.shop-item.done span.t{text-decoration:line-through;color:var(--mut)}
+.wk{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.wk button{flex:1;min-width:58px}
+.wk button.on{background:var(--mid);color:#fff;border-color:var(--mid)}
+.pill{align-self:start;font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;white-space:nowrap;border:1px solid transparent}
+.pill.ok{background:#e1f2e6;color:#1d6b3c} .pill.mod{background:#fdf0cf;color:#8a5a00} .pill.no{background:#fbe3e1;color:#a3302a}
+@media (prefers-color-scheme: dark){.pill.ok{background:#1f4a33;color:#a9e6c0} .pill.mod{background:#4a3a12;color:#f5d98a} .pill.no{background:#4d2523;color:#f5b3ad}}
+.card.food{display:grid;grid-template-columns:104px 1fr;gap:10px;padding:10px 12px;margin-bottom:8px}
+.card.food .nm{font-size:15px}
+input[type=search]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.empty{text-align:center;color:var(--mut);padding:18px 8px;font-size:14px}
+.tip{font-size:13px;color:var(--mut);margin-top:10px}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>🥑 Maraketo</h1><p id="sub"></p></div></header>
+<main id="view"></main>
+<nav><div class="in" id="nav"></div></nav>
+
+<script>
+const DATA = {"start": "2026-11-26", "days": 7, "recipes": {"CA": {"t": "Café", "n": "Omelete cremosa", "i": "2 ovos + 30 g muçarela + 10 g manteiga + 2 castanhas-do-pará (10 g)", "p": 20, "g": 31, "c": 2}, "CB": {"t": "Café", "n": "Mexido de espinafre", "i": "2 ovos + 50 g espinafre + 30 g cream cheese + 15 g castanha-do-pará", "p": 17, "g": 30, "c": 3}, "CC": {"t": "Café", "n": "Iogurte com ovo mexido", "i": "100 g iogurte grego natural integral sem açúcar + 20 g nozes + 1 ovo mexido em 5 g de manteiga", "p": 15, "g": 27, "c": 5.3}, "CD": {"t": "Café", "n": "Vitamina de abacate com ovos", "i": "Vitamina (80 g abacate + 250 ml leite de soja ou amêndoas sem açúcar + gelo) + 2 ovos mexidos em 5 g de manteiga", "p": 22, "g": 30.5, "c": 4}, "L1": {"t": "Almoço", "n": "Sobrecoxa assada", "i": "130 g sobrecoxa sem pele + 100 g brócolis com 10 g manteiga + 1 col. sopa azeite", "p": 35, "g": 33, "c": 3.5}, "L2": {"t": "Almoço", "n": "Salmão com couve-flor", "i": "150 g salmão + 150 g couve-flor na manteiga (10 g) + 50 g folhas + 1 col. sobremesa azeite", "p": 33, "g": 36, "c": 5.5}, "L3": {"t": "Almoço", "n": "Tilápia ao creme", "i": "120 g tilápia + 50 g creme de leite fresco + 150 g espinafre refogado + 1 col. sopa azeite", "p": 36, "g": 34, "c": 3}, "L4": {"t": "Almoço", "n": "Carne cozida desfiada", "i": "100 g acém/músculo cozido até desmanchar + 100 g couve refogada (1 col. sopa azeite) + 1 ovo cozido", "p": 37, "g": 31, "c": 4.5}, "S1": {"t": "Lanche", "n": "Nozes e queijo", "i": "20 g nozes + 30 g muçarela", "p": 10, "g": 19.5, "c": 1.3}, "S2": {"t": "Lanche", "n": "Ovos e castanhas", "i": "2 ovos cozidos + 15 g castanha-do-pará", "p": 14, "g": 20, "c": 1.5}, "S3": {"t": "Lanche", "n": "Pasta de atum", "i": "60 g atum + 1 col. sopa maionese + 30 g azeitonas + 50 g aipo ou folhas de alface para rechear", "p": 14, "g": 14, "c": 2}, "S4": {"t": "Lanche", "n": "Vitamina de abacate", "i": "80 g abacate + 250 ml leite de soja sem açúcar (ou de amêndoas) + gelo + adoçante a gosto", "p": 10, "g": 16.5, "c": 3}, "S5": {"t": "Lanche (troca)", "n": "Iogurte com nozes", "i": "100 g iogurte grego natural integral sem açúcar + 15 g nozes + canela", "p": 8, "g": 15, "c": 4.6}, "S6": {"t": "Lanche (troca)", "n": "Gelatina cremosa", "i": "1 pote de gelatina diet (sem açúcar) + 30 g creme de leite fresco batido", "p": 2, "g": 10, "c": 1.7}, "D1": {"t": "Jantar", "n": "Frittata de forno", "i": "3 ovos + 40 g muçarela + 100 g espinafre + 1 col. sopa azeite", "p": 30, "g": 37, "c": 3.6}, "D2": {"t": "Jantar", "n": "Salada de atum", "i": "120 g atum drenado + 1 ovo cozido + 100 g alface/tomate + 30 g azeitonas + 1 col. sopa maionese + 1 col. sopa azeite", "p": 34, "g": 33, "c": 4.5}, "D3": {"t": "Jantar", "n": "Frango cremoso gratinado", "i": "100 g peito desfiado + 40 g cream cheese + 20 g muçarela + 150 g couve-flor + 1 col. sobremesa azeite", "p": 41, "g": 26, "c": 6}, "D4": {"t": "Jantar", "n": "Strogonoff de frango", "i": "100 g peito + 50 g creme de leite fresco + 80 g cogumelos + purê de couve-flor 150 g com 10 g manteiga", "p": 37.5, "g": 29, "c": 7.5}, "T1": {"t": "Pós-treino", "n": "Vitamina proteica", "i": "250 ml leite de soja sem açúcar + 25 g whey isolado sem açúcar + 1 col. sopa chia", "p": 32, "g": 8, "c": 3}, "T2": {"t": "Pós-treino", "n": "Ovos e queijo (sem whey)", "i": "2 ovos cozidos + 30 g muçarela", "p": 19, "g": 16.5, "c": 1.5}}, "week": [{"name": "Segunda", "cafe": "CA", "almoco": "L1", "lanche": "S1", "jantar": "D1", "gym": false}, {"name": "Terça", "cafe": "CC", "almoco": "L2", "lanche": "S2", "jantar": "D2", "gym": false}, {"name": "Quarta", "cafe": "CA", "almoco": "L3", "lanche": "S4", "jantar": "D3", "gym": false}, {"name": "Quinta", "cafe": "CD", "almoco": "L4", "lanche": "S1", "jantar": "D4", "gym": false}, {"name": "Sexta", "cafe": "CA", "almoco": "L1", "lanche": "S2", "jantar": "D2", "gym": false}, {"name": "Sábado", "cafe": "CB", "almoco": "L2", "lanche": "S3", "jantar": "D4", "gym": false}, {"name": "Domingo", "cafe": "CA", "almoco": "L3", "lanche": "S4", "jantar": "D3", "gym": false}], "shop": [{"cat": "Proteínas", "item": "Ovos", "q": 24, "u": "un"}, {"cat": "Proteínas", "item": "Sobrecoxa de frango desossada sem pele", "q": 350, "u": "g"}, {"cat": "Proteínas", "item": "Peito de frango", "q": 550, "u": "g"}, {"cat": "Proteínas", "item": "Salmão (filé ou posta)", "q": 300, "u": "g"}, {"cat": "Proteínas", "item": "Tilápia (filé)", "q": 250, "u": "g"}, {"cat": "Proteínas", "item": "Atum em lata (natural ou em água)", "q": 3, "u": "latas"}, {"cat": "Proteínas", "item": "Acém ou músculo bovino (para cozinhar)", "q": 150, "u": "g"}, {"cat": "Laticínios", "item": "Queijo muçarela", "q": 300, "u": "g"}, {"cat": "Laticínios", "item": "Cream cheese", "q": 150, "u": "g"}, {"cat": "Laticínios", "item": "Iogurte grego natural integral sem açúcar", "q": 170, "u": "g"}, {"cat": "Laticínios", "item": "Creme de leite fresco", "q": 200, "u": "g"}, {"cat": "Laticínios", "item": "Manteiga", "q": 200, "u": "g"}, {"cat": "Gorduras e oleaginosas", "item": "Azeite extra virgem", "q": 250, "u": "ml"}, {"cat": "Gorduras e oleaginosas", "item": "Abacate (só para as vitaminas)", "q": 2, "u": "un pequenos"}, {"cat": "Gorduras e oleaginosas", "item": "Castanha-do-pará", "q": 100, "u": "g"}, {"cat": "Gorduras e oleaginosas", "item": "Nozes", "q": 60, "u": "g"}, {"cat": "Gorduras e oleaginosas", "item": "Maionese (sem açúcar)", "q": 1, "u": "pote pequeno"}, {"cat": "Gorduras e oleaginosas", "item": "Azeitonas", "q": 90, "u": "g"}, {"cat": "Legumes e verduras", "item": "Couve-flor", "q": 900, "u": "g"}, {"cat": "Legumes e verduras", "item": "Espinafre", "q": 500, "u": "g"}, {"cat": "Legumes e verduras", "item": "Brócolis", "q": 200, "u": "g"}, {"cat": "Legumes e verduras", "item": "Couve", "q": 100, "u": "g"}, {"cat": "Legumes e verduras", "item": "Cogumelos", "q": 160, "u": "g"}, {"cat": "Legumes e verduras", "item": "Alface / folhas variadas", "q": 300, "u": "g"}, {"cat": "Legumes e verduras", "item": "Tomate", "q": 1, "u": "un"}, {"cat": "Legumes e verduras", "item": "Aipo (para rechear com a pasta de atum)", "q": 1, "u": "talo"}, {"cat": "Legumes e verduras", "item": "Limão", "q": 2, "u": "un"}, {"cat": "Despensa", "item": "Sal, pimenta, alho, cebola, ervas (salsinha, cebolinha, orégano), páprica", "q": 1, "u": "conforme necessário"}, {"cat": "Despensa", "item": "Café / chá sem açúcar", "q": 1, "u": "conforme necessário"}, {"cat": "Despensa", "item": "Caldo de legumes ou frango sem açúcar e sem amido", "q": 1, "u": "conforme necessário"}, {"cat": "Despensa", "item": "Adoçante (stevia ou eritritol)", "q": 1, "u": "conforme necessário"}, {"cat": "Vitaminas e pós-treino", "item": "Leite de soja ou de amêndoas, sem açúcar", "q": 2, "u": "litros"}, {"cat": "Vitaminas e pós-treino", "item": "Gelatina diet sem açúcar (opcional, troca S6)", "q": 1, "u": "caixa"}, {"cat": "Vitaminas e pós-treino", "item": "Chia (1 col. sopa por pós-treino)", "q": 30, "u": "g"}, {"cat": "Vitaminas e pós-treino", "item": "Whey isolado sem açúcar (opcional, a partir do dia 20)", "q": 75, "u": "g"}]};
+const D = DATA, R = D.recipes;
+const KEY = "ketoMara.v1";
+
+/* ---------- estado e armazenamento ---------- */
+function defaults(){ return {weights:{}, startWeight:84, goal:null, plan:{}, done:{}, water:{}, shop:{}}; }
+let S = defaults();
+try{ const j = JSON.parse(localStorage.getItem(KEY) || "null"); if(j) S = Object.assign(defaults(), j); }catch(e){}
+let storageOk = true;
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); storageOk = true; }catch(e){ storageOk = false; } }
+
+/* ---------- datas ---------- */
+const WD = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+const pad = n => String(n).padStart(2,"0");
+function parse(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); }
+function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function br(d){ return pad(d.getDate())+"/"+pad(d.getMonth()+1); }
+const START = parse(D.start), N = D.days, END = addDays(START, N-1);
+const dayIdx = d => Math.round((d - START)/86400000);
+function todayDate(){ const t = new Date(); t.setHours(0,0,0,0); return t; }
+function clampDate(d){ const i = dayIdx(d); if(i<0) return new Date(START); if(i>=N) return new Date(END); return d; }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => parseFloat(String(v).replace(",", "."));
+const fmt = n => Math.round(n).toLocaleString("pt-BR");
+const f1 = n => (Math.round(n*10)/10).toLocaleString("pt-BR");
+
+/* ---------- plano ---------- */
+const SLOTS = [["cafe","Café da manhã","☕"],["almoco","Almoço","🍽️"],["lanche","Lanche","🥜"],["jantar","Jantar","🌙"]];
+const TYPE = {cafe:"Café", almoco:"Almoço", lanche:"Lanche", jantar:"Jantar", pos:"Pós-treino"};
+const EMO = {CA:"🍳",CB:"🥬",CC:"🥛",CD:"🥑",L1:"🍗",L2:"🐟",L3:"🐠",L4:"🥘",S1:"🥜",S2:"🥚",S3:"🥫",S4:"🥑",S5:"🥛",S6:"🍮",D1:"🍳",D2:"🥗",D3:"🧀",D4:"🍄",T1:"🥤",T2:"🥚"};
+const kcal = r => r.p*4 + r.c*4 + r.g*9;
+function options(slot){ return Object.keys(R).filter(k => R[k].t.indexOf(TYPE[slot]) === 0); }
+function planFor(d){
+  const w = D.week[(d.getDay()+6)%7], o = S.plan[iso(d)] || {};
+  return {cafe:o.cafe||w.cafe, almoco:o.almoco||w.almoco, lanche:o.lanche||w.lanche, jantar:o.jantar||w.jantar,
+          gym: o.gym !== undefined ? o.gym : w.gym, pos: o.pos || "T1"};
+}
+function activeSlots(p){ const a = ["cafe","almoco","lanche","jantar"]; if(p.gym) a.push("pos"); return a; }
+function totals(d, onlyDone){
+  const p = planFor(d), dn = S.done[iso(d)] || {}; const t = {k:0,p:0,g:0,c:0};
+  activeSlots(p).forEach(s => { if(onlyDone && !dn[s]) return; const r = R[p[s]]; t.k += kcal(r); t.p += r.p; t.g += r.g; t.c += r.c; });
+  return t;
+}
+function doneCount(d){ const p = planFor(d), dn = S.done[iso(d)] || {}; const a = activeSlots(p); return [a.filter(s => dn[s]).length, a.length]; }
+
+/* ---------- navegação ---------- */
+let tab = "hoje", cur = clampDate(todayDate()), shopWeek = 0;
+const TABS = [["hoje","📅","Hoje"],["plano","🗓️","Plano"],["peso","⚖️","Peso"],["compras","🛒","Compras"],["alimentos","✅","Alimentos"],["receitas","📖","Receitas"]];
+function go(t){ tab = t; render(); window.scrollTo(0,0); }
+function openDay(i){ cur = addDays(START, i); tab = "hoje"; render(); window.scrollTo(0,0); }
+function shift(n){ const d = addDays(cur, n); if(dayIdx(d) < 0 || dayIdx(d) >= N) return; cur = d; render(); }
+function jumpToday(){ cur = clampDate(todayDate()); render(); }
+
+/* ---------- ações ---------- */
+function setPlan(key, slot, v){ S.plan[key] = S.plan[key] || {}; S.plan[key][slot] = v; save(); render(); }
+function toggleDone(key, slot, v){ S.done[key] = S.done[key] || {}; S.done[key][slot] = v; save(); render(); }
+function setGym(key, v){ S.plan[key] = S.plan[key] || {}; S.plan[key].gym = v; save(); render(); }
+function setWater(key, n){ const cur = S.water[key] || 0; S.water[key] = (cur === n ? n-1 : n); save(); render(); }
+function addWeight(ev){
+  ev.preventDefault();
+  const f = ev.target, date = f.date.value, kg = num(f.kg.value);
+  if(!date || !(kg > 20 && kg < 400)){ alert("Informe uma data e um peso válido (em kg)."); return; }
+  S.weights[date] = {kg: Math.round(kg*10)/10, note: f.note.value.trim()}; save(); render();
+}
+function updWeight(date, v){ const kg = num(v); if(!(kg > 20 && kg < 400)){ render(); return; } S.weights[date].kg = Math.round(kg*10)/10; save(); render(); }
+function updNote(date, v){ S.weights[date].note = v.trim(); save(); }
+function delWeight(date){ if(confirm("Apagar o registro de "+br(parse(date))+"?")){ delete S.weights[date]; save(); render(); } }
+function setStartWeight(v){ const kg = num(v); if(kg > 20 && kg < 400){ S.startWeight = Math.round(kg*10)/10; save(); } render(); }
+function setGoal(v){ const kg = num(v); S.goal = (kg > 20 && kg < 400) ? Math.round(kg*10)/10 : null; save(); render(); }
+const shopKey = w => D.start + ":" + w;
+function toggleShop(w, i, v){ const k = shopKey(w); S.shop[k] = S.shop[k] || {}; S.shop[k][i] = v; save(); render(); }
+function clearShop(w){ S.shop[shopKey(w)] = {}; save(); render(); }
+function setShopWeek(w){ shopWeek = w; render(); }
+function exportData(){
+  const blob = new Blob([JSON.stringify(S, null, 2)], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "keto-mara-backup-"+iso(new Date())+".json"; a.click();
+}
+function importData(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = () => { try{ const j = JSON.parse(r.result); S = Object.assign(defaults(), j); save(); render(); alert("Dados importados."); }catch(e){ alert("Arquivo inválido."); } };
+  r.readAsText(file);
+}
+function resetAll(){ if(confirm("Apagar TODOS os dados do app (pesos, marcações, trocas)?")){ S = defaults(); save(); render(); } }
+
+/* ---------- telas ---------- */
+function chips(r){ return `<div class="chips"><span class="chip k">${fmt(kcal(r))} kcal</span><span class="chip p">P ${f1(r.p)}</span><span class="chip g">G ${f1(r.g)}</span><span class="chip c">C ${f1(r.c)}</span></div>`; }
+
+function mealCard(slot, label, emo, key, p){
+  const code = p[slot], r = R[code], dn = (S.done[key] || {})[slot];
+  const opts = options(slot).map(k => `<option value="${k}" ${k===code?"selected":""}>${esc(R[k].n)}${R[k].t.indexOf("troca")>0?" (troca)":""}</option>`).join("");
+  return `<div class="card meal ${dn?"done":""}">
+    <div class="emo">${EMO[code]||emo}</div>
+    <div><div class="lab">${label}</div><div class="nm">${esc(r.n)}</div><div class="ing">${esc(r.i)}</div>${chips(r)}
+      <select aria-label="Trocar ${label}" onchange="setPlan('${key}','${slot}',this.value)">${opts}</select></div>
+    <label style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mut)"><input type="checkbox" ${dn?"checked":""} onchange="toggleDone('${key}','${slot}',this.checked)">comi</label>
+  </div>`;
+}
+
+function viewHoje(){
+  const key = iso(cur), p = planFor(cur), i = dayIdx(cur), t = totals(cur,false), e = totals(cur,true), dc = doneCount(cur);
+  const today = todayDate(), before = dayIdx(today) < 0;
+  let h = "";
+  if(before){ h += `<div class="banner">🌱 Faltam <b>${-dayIdx(today)} dia(s)</b> para começar (${br(START)}). Enquanto isso, veja o plano e a lista de compras da semana 1.</div>`; }
+  else if(dayIdx(today) >= N){ h += `<div class="banner">🎉 O plano de ${N} dias terminou. Continue registrando o peso e converse com seu médico sobre os próximos passos.</div>`; }
+  h += `<div class="datebar"><button class="btn" onclick="shift(-1)" aria-label="Dia anterior">◀</button>
+    <div class="mid"><div class="big">${WD[cur.getDay()]}, ${br(cur)}</div><div class="mut">Dia ${i+1} de ${N}${key===iso(today)?" · hoje":""}</div></div>
+    <button class="btn" onclick="shift(1)" aria-label="Próximo dia">▶</button></div>`;
+  if(key !== iso(today) && dayIdx(today) >= 0 && dayIdx(today) < N) h += `<div style="text-align:center;margin:-4px 0 10px"><button class="btn sm" onclick="jumpToday()">Voltar para hoje</button></div>`;
+  h += `<div class="card"><div class="row sp"><b>Refeições feitas</b><span>${dc[0]} de ${dc[1]}</span></div><div class="bar" style="margin-top:8px"><i style="width:${dc[1]?dc[0]/dc[1]*100:0}%"></i></div></div>`;
+  SLOTS.forEach(([s,l,em]) => { h += mealCard(s,l,em,key,p); });
+  h += `<div class="card"><label class="row" style="cursor:pointer"><input type="checkbox" ${p.gym?"checked":""} onchange="setGym('${key}',this.checked)"><b>🏋️ Dia de academia</b><span class="mut">(inclui pós-treino)</span></label></div>`;
+  if(p.gym) h += mealCard("pos","Pós-treino","🥤",key,p);
+  h += `<div class="card"><b>Planejado para o dia</b><div class="macros" style="margin-top:8px">
+      <div><b>${fmt(t.k)}</b><span>kcal</span></div><div><b>${fmt(t.p)}</b><span>proteína g</span></div><div><b>${fmt(t.g)}</b><span>gordura g</span></div><div><b>${f1(t.c)}</b><span>carbo líq. g</span></div></div>
+      <div style="margin-top:12px"><b>Já comi (marcado)</b></div><div class="macros" style="margin-top:8px">
+      <div><b>${fmt(e.k)}</b><span>kcal</span></div><div><b>${fmt(e.p)}</b><span>proteína g</span></div><div><b>${fmt(e.g)}</b><span>gordura g</span></div><div><b>${f1(e.c)}</b><span>carbo líq. g</span></div></div>
+      ${t.c > 25 ? `<div class="warn">⚠️ O carboidrato líquido planejado passou de 25 g. Troque alguma refeição para ficar na keto.</div>` : ""}
+    </div>`;
+  const w = S.water[key] || 0;
+  h += `<div class="card"><div class="row sp"><b>💧 Água</b><span class="mut">${w} de 8 copos (≈ ${f1(w*0.25)} L)</span></div><div class="water" style="margin-top:8px">${[1,2,3,4,5,6,7,8].map(n => `<button class="${n<=w?"on":""}" onclick="setWater('${key}',${n})" aria-label="${n} copos">💧</button>`).join("")}</div>
+    <div class="tip">Não economize no sal nas primeiras semanas. Ovo cozido pode virar mexido: some 5 g de manteiga (+45 kcal).</div></div>`;
+  return h;
+}
+
+function viewPlano(){
+  let h = `<h2>Plano de ${N} dias</h2><div class="mut" style="margin-bottom:6px">${br(START)} a ${br(END)}. Toque em um dia para ver e trocar as refeições.</div><div class="week">`;
+  const tdy = iso(todayDate());
+  for(let i = 0; i < N; i++){
+    const d = addDays(START, i);
+    if(i % 7 === 0) h += `<h3>Semana ${i/7+1} <span class="mut">(${br(d)} a ${br(addDays(START, Math.min(i+6, N-1)))})</span></h3>`;
+    const p = planFor(d), t = totals(d,false), dc = doneCount(d);
+    h += `<div class="card day ${iso(d)===tdy?"today":""} ${iso(d)===iso(cur)?"sel":""}" onclick="openDay(${i})">
+      <div class="dd">${pad(d.getDate())}<small>${WD[d.getDay()].slice(0,3)}</small></div>
+      <div class="meals"><b>${esc(R[p.cafe].n)}</b> · ${esc(R[p.almoco].n)} · ${esc(R[p.lanche].n)} · ${esc(R[p.jantar].n)}</div>
+      <div class="right"><b>${fmt(t.k)}</b> kcal<br>${p.gym?"🏋️ ":""}${dc[0]===dc[1]?"✅":dc[0]+"/"+dc[1]}</div></div>`;
+  }
+  return h + `</div>`;
+}
+
+function weightPoints(){
+  const pts = Object.keys(S.weights).sort().map(k => ({d: parse(k), kg: S.weights[k].kg, k}));
+  if(!S.weights[iso(START)]) pts.unshift({d: new Date(START), kg: S.startWeight, k: "inicio", start: true});
+  return pts.sort((a,b) => a.d - b.d);
+}
+function chartSVG(pts){
+  const W = 640, H = 300, L = 46, Rr = 16, T = 18, B = 36;
+  let x0 = new Date(START), x1 = new Date(END);
+  pts.forEach(p => { if(p.d < x0) x0 = new Date(p.d); if(p.d > x1) x1 = new Date(p.d); });
+  const vals = pts.map(p => p.kg).concat(S.goal ? [S.goal] : []);
+  let lo = Math.floor(Math.min.apply(null, vals) - 1), hi = Math.ceil(Math.max.apply(null, vals) + 1);
+  if(hi - lo < 4) hi = lo + 4;
+  const X = d => L + (d - x0)/(x1 - x0 || 1) * (W - L - Rr);
+  const Y = v => T + (hi - v)/(hi - lo) * (H - T - B);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de peso">`;
+  const step = (hi - lo) > 12 ? 2 : 1;
+  for(let v = lo; v <= hi; v += step){ s += `<line x1="${L}" x2="${W-Rr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${v}</text>`; }
+  const days = Math.round((x1 - x0)/86400000);
+  for(let i = 0; i <= days; i += 7){ const d = addDays(x0, i); s += `<text x="${X(d)}" y="${H-12}" text-anchor="middle">${br(d)}</text>`; }
+  if(S.goal) s += `<line x1="${L}" x2="${W-Rr}" y1="${Y(S.goal)}" y2="${Y(S.goal)}" stroke="var(--g)" stroke-dasharray="6 5" stroke-width="2"/><text x="${W-Rr}" y="${Y(S.goal)-5}" text-anchor="end" style="fill:var(--g);font-weight:700">meta ${f1(S.goal)} kg</text>`;
+  if(pts.length > 1) s += `<polyline fill="none" stroke="var(--mid)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="${pts.map(p => X(p.d)+","+Y(p.kg)).join(" ")}"/>`;
+  pts.forEach((p, i) => {
+    const last = i === pts.length - 1;
+    s += `<circle cx="${X(p.d)}" cy="${Y(p.kg)}" r="${last?6:4.5}" fill="${p.start?"var(--card)":"var(--mid)"}" stroke="var(--mid)" stroke-width="2.5"><title>${br(p.d)}: ${f1(p.kg)} kg${p.start?" (início)":""}</title></circle>`;
+    if(last || i === 0) s += `<text x="${X(p.d)}" y="${Y(p.kg)-11}" text-anchor="${i===0&&!last?"start":"end"}" style="fill:var(--ink);font-weight:700;font-size:12px">${f1(p.kg)}</text>`;
+  });
+  return s + `</svg>`;
+}
+function viewPeso(){
+  const pts = weightPoints(), first = pts[0], last = pts[pts.length-1];
+  const diff = last.kg - S.startWeight;
+  const spanDays = (last.d - first.d)/86400000;
+  const rate = spanDays >= 7 ? (last.kg - first.kg)/(spanDays/7) : null;
+  const remaining = S.goal ? last.kg - S.goal : null;
+  const tdy = clampDate(todayDate());
+  const entries = Object.keys(S.weights).sort().reverse();
+  const hasReal = entries.length > 0;
+  let h = `<h2>Meu peso</h2>
+  <div class="stats">
+    <div class="stat"><span>Peso inicial</span><b>${f1(S.startWeight)} kg</b></div>
+    <div class="stat"><span>Peso atual</span><b>${f1(last.kg)} kg</b></div>
+    <div class="stat"><span>Variação</span><b class="${diff<0?"good":diff>0?"bad":""}">${diff>0?"+":""}${f1(diff)} kg</b></div>
+    <div class="stat"><span>${remaining!==null?"Falta para a meta":"Ritmo por semana"}</span><b>${remaining!==null?(remaining<=0?"🎉 meta!":f1(remaining)+" kg"):(rate!==null?(rate>0?"+":"")+f1(rate)+" kg":"–")}</b></div>
+  </div>
+  <div class="card"><div class="row sp" style="margin-bottom:6px"><b>Evolução</b><span class="mut">${hasReal?entries.length+" registro(s)":"sem registros ainda"}</span></div>${chartSVG(pts)}
+    ${rate!==null && remaining!==null ? `<div class="tip">Ritmo atual: ${rate>0?"+":""}${f1(rate)} kg por semana.</div>`:""}</div>
+  <div class="card"><b>Registrar peso</b>
+    <form class="add" onsubmit="addWeight(event)" style="margin-top:10px">
+      <div><label>Data</label><input type="date" name="date" value="${iso(new Date())}" required></div>
+      <div><label>Peso (kg)</label><input type="text" inputmode="decimal" name="kg" placeholder="ex.: 83,4" required></div>
+      <div class="full"><label>Observação (opcional)</label><input type="text" name="note" placeholder="ex.: depois do pilates"></div>
+      <div class="full"><button class="btn pri" style="width:100%">Salvar registro</button></div>
+    </form>
+    <div class="tip">Pese-se 1 vez por semana, de manhã, antes de comer. Se registrar de novo na mesma data, o valor é atualizado.</div></div>
+  <div class="card"><b>Peso inicial e meta</b>
+    <div class="row" style="margin-top:10px;gap:8px">
+      <div style="flex:1"><label class="mut">Peso inicial (kg)</label><input style="width:100%" type="text" inputmode="decimal" value="${f1(S.startWeight)}" onchange="setStartWeight(this.value)"></div>
+      <div style="flex:1"><label class="mut">Meta (kg)</label><input style="width:100%" type="text" inputmode="decimal" value="${S.goal?f1(S.goal):""}" placeholder="opcional" onchange="setGoal(this.value)"></div>
+    </div></div>`;
+  h += `<h3>Registros (edite os valores aqui)</h3>`;
+  if(!hasReal) h += `<div class="empty">Nenhum registro ainda. Use o formulário acima.</div>`;
+  entries.forEach(k => {
+    const w = S.weights[k];
+    h += `<div class="wrow"><span>${br(parse(k))}</span><input type="text" inputmode="decimal" value="${f1(w.kg)}" aria-label="Peso em ${br(parse(k))}" onchange="updWeight('${k}',this.value)"><input type="text" value="${esc(w.note||"")}" placeholder="observação" onchange="updNote('${k}',this.value)"><button class="btn sm danger" onclick="delWeight('${k}')" aria-label="Apagar">✕</button></div>`;
+  });
+  h += `<h3>Backup dos dados</h3><div class="card"><div class="mut">Os dados ficam salvos neste navegador${storageOk?"":" (<b class='bad'>atenção: o navegador está bloqueando o armazenamento</b>)"}. Faça um backup de vez em quando.</div>
+    <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" onclick="exportData()">⬇️ Exportar</button>
+    <label class="btn sm" style="cursor:pointer">⬆️ Importar<input type="file" accept="application/json" onchange="importData(event)" style="display:none"></label>
+    <button class="btn sm danger" onclick="resetAll()">Apagar tudo</button></div></div>`;
+  return h;
+}
+
+function viewCompras(){
+  const weeks = Math.ceil(N/7);
+  let h = `<h2>Lista de compras</h2><div class="wk">`;
+  for(let w = 0; w < weeks; w++) h += `<button class="btn ${w===shopWeek?"on":""}" onclick="setShopWeek(${w})">Sem ${w+1}</button>`;
+  const a = addDays(START, shopWeek*7), b = addDays(START, Math.min(shopWeek*7+6, N-1)), short = shopWeek*7+7 > N;
+  h += `</div><div class="mut" style="margin-bottom:6px">Semana ${shopWeek+1}: ${br(a)} a ${br(b)}. Quantidades já arredondadas para a embalagem.${short?" <b>Semana curta ("+(N-shopWeek*7)+" dias): compre cerca de metade.</b>":""}</div>`;
+  const st = S.shop[shopKey(shopWeek)] || {}; let cat = null;
+  D.shop.forEach((it, i) => {
+    if(it.cat !== cat){ cat = it.cat; h += `<h3 class="shop-cat">${esc(cat)}</h3>`; }
+    const q = it.u === "conforme necessário" ? "conforme necessário" : (it.q + " " + it.u);
+    h += `<label class="shop-item ${st[i]?"done":""}"><input type="checkbox" ${st[i]?"checked":""} onchange="toggleShop(${shopWeek},${i},this.checked)"><span class="t">${esc(it.item)}</span><span class="q">${esc(q)}</span></label>`;
+  });
+  h += `<div class="tip">Se você trocar refeições no plano, ajuste as quantidades. Para trocas S5 e S6 (iogurte e gelatina), a lista já traz os itens opcionais.</div>
+    <div style="margin-top:12px"><button class="btn sm" onclick="clearShop(${shopWeek})">Limpar marcações desta semana</button></div>`;
+  return h;
+}
+
+function viewReceitas(){
+  let h = `<h2>Receitas e trocas</h2><div class="mut" style="margin-bottom:6px">P = proteína, G = gordura, C = carboidrato líquido (g). Pesos dos alimentos já cozidos.</div>`;
+  [["Café","Café da manhã"],["Almoço","Almoço"],["Lanche","Lanches e trocas"],["Jantar","Jantar"],["Pós-treino","Pós-treino (dias de academia)"]].forEach(([t,l]) => {
+    h += `<h3>${l}</h3>`;
+    Object.keys(R).filter(k => R[k].t.indexOf(t) === 0).forEach(k => {
+      const r = R[k];
+      h += `<div class="card meal" style="grid-template-columns:44px 1fr"><div class="emo">${EMO[k]||"🍽️"}</div><div><div class="nm">${esc(r.n)} <span class="mut">· ${k}</span></div><div class="ing">${esc(r.i)}</div>${chips(r)}</div></div>`;
+    });
+  });
+  return h;
+}
+
+const FOODS = [["Carnes, peixes e ovos", [["Ovos", "ok", "Cozido, mexido ou em omelete. Cerca de 0,5 g de carboidrato cada."], ["Frango (sobrecoxa, peito, coxa)", "ok", "0 g de carboidrato. Sem empanar."], ["Peixes e frutos do mar (salmão, tilápia, sardinha, atum, camarão)", "ok", "0 g de carboidrato. Atum e sardinha em lata: escolha natural ou em água."], ["Carne de porco (lombo, bisteca, pernil)", "ok", "0 g de carboidrato."], ["Carne bovina cozida (acém, músculo, panela de pressão)", "ok", "0 g de carboidrato. É a que você digere bem."], ["Bacon", "ok", "0 g de carboidrato. Sem exagero, por causa do sódio."], ["Presunto, peito de peru, mortadela", "mod", "Confira o rótulo: alguns levam amido e açúcar."], ["Salsicha e linguiça", "mod", "Só as de carne pura, sem amido nem açúcar."], ["Hambúrguer pronto e empanados (nuggets, milanesa)", "no", "Levam farinha e pão ralado."], ["Surimi (kani)", "no", "Feito com amido."]]], ["Laticínios e leites", [["Queijos (muçarela, parmesão, prato, minas padrão, provolone)", "ok", "0 a 1 g por porção de 30 g."], ["Cream cheese", "ok", "Cerca de 1 g em 30 g. Escolha um sem amido."], ["Creme de leite fresco e manteiga", "ok", "Cerca de 1 g em 30 g de creme. Manteiga e ghee: 0 g."], ["Leite de soja ou de amêndoas, sem açúcar", "ok", "Cerca de 1 g por copo de 250 ml. Serve para a vitamina de abacate."], ["Iogurte natural integral ou grego, sem açúcar", "mod", "4 a 6 g por 100 g. Porção de 100 a 150 g."], ["Requeijão, ricota, cottage", "mod", "2 a 4 g por 100 g. Confira se tem amido."], ["Leite de coco (sem açúcar)", "mod", "Confira o rótulo. Pouca quantidade."], ["Leite de vaca (integral, desnatado, sem lactose)", "no", "Cerca de 12 g de carboidrato num copo de 250 ml, quase metade do seu limite."], ["Iogurte de fruta, bebida láctea, achocolatado, leite condensado", "no", "Cheios de açúcar."]]], ["Verduras e legumes", [["Folhas: alface, rúcula, agrião, espinafre, couve, acelga", "ok", "0,5 a 2 g por 100 g. À vontade."], ["Brócolis, couve-flor, repolho, aspargo, palmito, berinjela", "ok", "2 a 4 g por 100 g."], ["Cogumelos (champignon, shimeji)", "ok", "2 a 3 g por 100 g."], ["Tomate, aipo, vagem", "ok", "3 a 4 g por 100 g. Um tomate pequeno por refeição é suficiente."], ["Abobrinha e pepino", "ok", "2 a 3 g por 100 g. Liberados, mas você não gosta, então ficam fora do cardápio."], ["Tofu", "ok", "Cerca de 2 g por 100 g."], ["Pimentão, cebola e alho", "mod", "Como tempero, em pouca quantidade. Cebola tem cerca de 8 g por 100 g."], ["Cenoura", "mod", "Cerca de 7 g por 100 g. Só ralada como tempero (1 colher de sopa ≈ 1 g), nunca como acompanhamento."], ["Ervilha-torta", "mod", "Cerca de 4 g por 100 g. Pouca quantidade."], ["Abóbora (cabotiá, moranga)", "mod", "5 a 8 g por 100 g. Até 50 g por refeição."], ["Ervilha (fresca, em lata, seca)", "no", "8 a 14 g por 100 g. A de lata costuma ter açúcar."], ["Beterraba", "no", "Cerca de 7 a 8 g por 100 g."], ["Milho (verde, pipoca, canjica)", "no", "Cerca de 19 g por 100 g."], ["Batata, batata-doce, mandioca (aipim), inhame, cará", "no", "15 a 30 g por 100 g. Passam do limite do dia."], ["Feijão, lentilha, grão-de-bico, soja em grão", "no", "10 a 20 g por 100 g cozido."]]], ["Frutas", [["Abacate", "ok", "Cerca de 2 g por 100 g. No seu plano, só em vitamina com leite vegetal."], ["Azeitonas", "ok", "Cerca de 1 g por 100 g."], ["Limão (suco e raspas)", "ok", "Para temperar. 1 colher de sopa ≈ 1 g."], ["Morango, framboesa, amora", "mod", "4 a 6 g por 100 g. Até 50 g (uns 4 morangos)."], ["Mirtilo (blueberry)", "mod", "Cerca de 12 g por 100 g. Só 1 colher de sopa."], ["Coco ralado sem açúcar", "mod", "1 a 2 colheres de sopa."], ["Banana, maçã, pera, uva, manga, abacaxi, melancia, mamão, laranja, tangerina, kiwi, caqui", "no", "8 a 20 g por 100 g. Uma unidade já gasta metade do seu limite do dia."], ["Frutas secas (uva-passa, tâmara, damasco) e sucos de fruta", "no", "Açúcar concentrado."]]], ["Oleaginosas e sementes", [["Castanha-do-pará, nozes, macadâmia, avelã, pecã", "ok", "15 a 30 g por dia, cerca de 1 a 2 g de carboidrato."], ["Chia, linhaça, gergelim, sementes de girassol e de abóbora", "ok", "1 colher de sopa ≈ 1 g de carboidrato líquido."], ["Amêndoas, pistache, amendoim e pasta de amendoim sem açúcar", "mod", "20 g ≈ 2 a 3 g. Leia o rótulo da pasta."], ["Castanha de caju", "mod", "15 g ≈ 4 g de carboidrato. Cuidado com o punhado."]]], ["Gorduras e óleos", [["Azeite extra virgem, óleo de coco, manteiga, ghee, banha", "ok", "0 g de carboidrato."], ["Maionese sem açúcar", "ok", "Confira o rótulo: sem açúcar e sem amido."], ["Óleo de soja, milho ou girassol, margarina", "mod", "Podem, mas prefira azeite e manteiga."]]], ["Cereais, pães e farinhas", [["Couve-flor ralada (no lugar do arroz), macarrão de shirataki", "ok", "Substitutos com pouquíssimo carboidrato."], ["Farinha de amêndoas", "mod", "Para receitas low carb. Pouca quantidade."], ["Farinha de coco e pão low carb industrializado", "mod", "Confira o carboidrato líquido por porção."], ["Arroz (branco, integral), macarrão, pão (inclusive integral), tapioca, cuscuz, aveia, granola, cereal matinal, quinoa", "no", "15 a 75 g por 100 g."], ["Biscoito, bolo, pizza, farofa, farinha de trigo e de mandioca, polvilho", "no", "Feitos de farinha e amido."]]], ["Doces e adoçantes", [["Stevia, eritritol, sucralose", "ok", "Prefira os líquidos ou puros. Sachês com maltodextrina contam cerca de 1 g."], ["Gelatina diet (sem açúcar)", "ok", "Cerca de 0 g de carboidrato, mas com pouco nutriente. Fica melhor com creme de leite fresco."], ["Chocolate amargo 70% ou mais", "mod", "10 g (1 quadradinho) ≈ 2 a 3 g de carboidrato."], ["Cacau em pó 100%", "mod", "1 colher de sopa ≈ 1 g."], ["Xilitol, maltitol, sorbitol", "mod", "Elevam um pouco a glicemia e podem dar desconforto no intestino."], ["Açúcar (branco, mascavo, demerara, de coco), mel, melado, xarope, geleia, doce de leite", "no", "Carboidrato puro."], ["Chocolate ao leite e branco, sorvete, pudim, doces em geral", "no", "Cheios de açúcar."]]], ["Bebidas", [["Água, água com gás, café e chá sem açúcar, caldos caseiros", "ok", "À vontade. Meta: 2 a 2,5 L de água por dia."], ["Refrigerante ou suco zero, energético zero", "mod", "Sem açúcar, mas mantêm a vontade de doce. No máximo 1 por dia."], ["Vinho seco e destilados (vodka, gin, whisky)", "mod", "1 taça de vinho (150 ml) ≈ 3 a 4 g. O álcool atrapalha o emagrecimento e o treino."], ["Água de coco", "no", "Cerca de 7 g de carboidrato num copo de 200 ml."], ["Refrigerante comum, suco (natural, de caixinha ou em pó), isotônico", "no", "Açúcar líquido."], ["Cerveja, caipirinha, vinho doce, drinques", "no", "Carboidrato e açúcar."]]], ["Molhos e temperos", [["Sal, pimenta, ervas, especiarias, alho, limão, vinagre, mostarda sem açúcar", "ok", "À vontade."], ["Shoyu", "mod", "1 colher de sopa ≈ 1 g. Muito sódio."], ["Molho de tomate pronto, extrato de tomate", "mod", "2 colheres de sopa de extrato ≈ 3 g. Molhos prontos costumam ter açúcar."], ["Caldo em cubo ou em pó", "mod", "Leia o rótulo: amido e açúcar. Prefira caldo caseiro."], ["Ketchup, barbecue, teriyaki, molho agridoce", "no", "Têm muito açúcar."]]], ["Industrializados", [["Whey isolado sem açúcar", "ok", "Cerca de 1 g por dose de 25 g."], ["Produtos diet, fit e light (barrinhas, pães, biscoitos)", "mod", "Diet não quer dizer low carb. Olhe o carboidrato líquido no rótulo."], ["Salgadinhos, pão de queijo, coxinha, pastel, empada", "no", "Feitos de farinha e fritura."]]]];
+const FOOD_ST = {ok:["Livre","ok"], mod:["Com moderação","mod"], no:["Evitar","no"]};
+let foodQ = "", foodF = "all";
+function norm(t){ return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+function foodsHTML(){
+  const q = norm(foodQ.trim()); let h = "", total = 0;
+  FOODS.forEach(function(cat){
+    const items = cat[1].filter(function(it){ return (foodF === "all" || it[1] === foodF) && (!q || norm(it[0] + " " + it[2]).indexOf(q) >= 0); });
+    if(!items.length) return;
+    h += `<h3>${esc(cat[0])}</h3>`;
+    items.forEach(function(it){
+      total++;
+      const st = FOOD_ST[it[1]];
+      h += `<div class="card food"><span class="pill ${st[1]}">${st[0]}</span><div><div class="nm">${esc(it[0])}</div><div class="ing">${esc(it[2])}</div></div></div>`;
+    });
+  });
+  return total ? h : `<div class="empty">Nada encontrado. Confira o rótulo: se tiver açúcar, amido ou farinha, evite.</div>`;
+}
+function setFoodQ(v){ foodQ = v; const el = document.getElementById("foodlist"); if(el) el.innerHTML = foodsHTML(); }
+function setFoodF(f){ foodF = f; render(); }
+function viewAlimentos(){
+  const fl = [["all","Todos"],["ok","Livres"],["mod","Moderação"],["no","Evitar"]];
+  return `<h2>O que pode e o que não pode</h2>
+  <div class="card"><b>Regra rápida</b><div class="ing" style="font-size:14px;margin-top:4px">Carboidrato líquido = carboidrato total menos fibras. Seu limite é de <b>20 g por dia</b> (até 25 g). Ao ler o rótulo, desconfie de açúcar, amido, maltodextrina e farinha. "Diet", "fit" e "light" não garantem pouco carboidrato.</div></div>
+  <input type="search" id="foodq" placeholder="Buscar alimento (ex.: cenoura, ervilha)" value="${esc(foodQ)}" oninput="setFoodQ(this.value)" style="width:100%;margin-bottom:10px" aria-label="Buscar alimento">
+  <div class="wk">${fl.map(function(x){ return `<button class="btn sm ${x[0]===foodF?"on":""}" onclick="setFoodF('${x[0]}')">${x[1]}</button>`; }).join("")}</div>
+  <div id="foodlist">${foodsHTML()}</div>
+  <div class="tip">Valores aproximados de carboidrato líquido. As porções de "com moderação" cabem no limite do dia se você somar as outras refeições.</div>`;
+}
+
+function render(){
+  document.getElementById("sub").textContent = "Plano de " + N + " dias · " + br(START) + " a " + br(END) + (D.note ? " · " + D.note : "");
+  document.getElementById("nav").innerHTML = TABS.map(([k,ic,l]) => `<button class="${k===tab?"on":""}" onclick="go('${k}')"><span class="ic">${ic}</span>${l}</button>`).join("");
+  const v = {hoje:viewHoje, plano:viewPlano, peso:viewPeso, compras:viewCompras, alimentos:viewAlimentos, receitas:viewReceitas}[tab];
+  document.getElementById("view").innerHTML = v();
+}
+render();
+if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
+</script>
+</body>
+</html>
