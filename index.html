@@ -31,8 +31,8 @@ header p{margin:4px 0 0;color:var(--lime);font-size:13px}
 main{max-width:760px;margin:0 auto;padding:16px}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:10}
 nav .in{display:flex;max-width:760px;width:100%}
-nav button{flex:1;min-width:0;border:0;background:none;color:var(--mut);padding:8px 1px 10px;font:inherit;font-size:11px;cursor:pointer}
-nav button .ic{display:block;font-size:21px;line-height:1.2}
+nav button{flex:1;min-width:0;border:0;background:none;color:var(--mut);padding:8px 1px 10px;font:inherit;font-size:10px;cursor:pointer}
+nav button .ic{display:block;font-size:19px;line-height:1.2}
 nav button.on{color:var(--mid);font-weight:700}
 h2{font-size:18px;margin:6px 0 12px}
 h3{font-size:15px;margin:18px 0 8px;color:var(--deep)}
@@ -106,6 +106,21 @@ svg.chart{width:100%;height:auto;display:block}
 .card.food{display:grid;grid-template-columns:104px 1fr;gap:10px;padding:10px 12px;margin-bottom:8px}
 .card.food .nm{font-size:15px}
 input[type=search]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.por{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.por.first{border-top:0}
+.por .pill{white-space:normal;text-align:center;flex-shrink:0;min-width:84px;max-width:46%}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .dow{text-align:center;font-size:12px;font-weight:700;color:var(--mut);padding-bottom:2px}
+.tc{aspect-ratio:1/1;min-width:0;overflow:hidden;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:2px;font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.tc .n{font-size:13px;font-weight:700;line-height:1.1}
+.tc .e{font-size:13px;line-height:1.1;min-height:15px}
+.tc.on{background:var(--soft);border-color:var(--mid)}
+.tc.today{outline:2px solid var(--mid)}
+.bar.ba > i{background:var(--mid)}
+.bar.bp > i{background:var(--p)}
+.stat small{font-size:13px;font-weight:600;color:var(--mut)}
+.tipcard ul{margin:8px 0 0;padding-left:20px}
+.tipcard li{margin:5px 0;font-size:14px}
 .empty{text-align:center;color:var(--mut);padding:18px 8px;font-size:14px}
 .tip{font-size:13px;color:var(--mut);margin-top:10px}
 </style>
@@ -121,7 +136,7 @@ const D = DATA, R = D.recipes;
 const KEY = "ketoMara.v1";
 
 /* ---------- estado e armazenamento ---------- */
-function defaults(){ return {weights:{}, startWeight:84, goal:null, plan:{}, done:{}, water:{}, shop:{}}; }
+function defaults(){ return {weights:{}, train:{}, trainGoal:{a:3,p:3}, startWeight:null, goal:null, plan:{}, done:{}, water:{}, shop:{}}; }
 let S = defaults();
 try{ const j = JSON.parse(localStorage.getItem(KEY) || "null"); if(j) S = Object.assign(defaults(), j); }catch(e){}
 let storageOk = true;
@@ -164,7 +179,7 @@ function doneCount(d){ const p = planFor(d), dn = S.done[iso(d)] || {}; const a 
 
 /* ---------- navegação ---------- */
 let tab = "hoje", cur = clampDate(todayDate()), shopWeek = 0;
-const TABS = [["hoje","📅","Hoje"],["plano","🗓️","Plano"],["peso","⚖️","Peso"],["compras","🛒","Compras"],["alimentos","✅","Alimentos"],["receitas","📖","Receitas"]];
+const TABS = [["hoje","📅","Hoje"],["plano","🗓️","Plano"],["treinos","🏋️","Treinos"],["peso","⚖️","Peso"],["compras","🛒","Compras"],["alimentos","✅","Alimentos"],["dicas","💡","Dicas"]];
 function go(t){ tab = t; render(); window.scrollTo(0,0); }
 function openDay(i){ cur = addDays(START, i); tab = "hoje"; render(); window.scrollTo(0,0); }
 function shift(n){ const d = addDays(cur, n); if(dayIdx(d) < 0 || dayIdx(d) >= N) return; cur = d; render(); }
@@ -184,7 +199,7 @@ function addWeight(ev){
 function updWeight(date, v){ const kg = num(v); if(!(kg > 20 && kg < 400)){ render(); return; } S.weights[date].kg = Math.round(kg*10)/10; save(); render(); }
 function updNote(date, v){ S.weights[date].note = v.trim(); save(); }
 function delWeight(date){ if(confirm("Apagar o registro de "+br(parse(date))+"?")){ delete S.weights[date]; save(); render(); } }
-function setStartWeight(v){ const kg = num(v); if(kg > 20 && kg < 400){ S.startWeight = Math.round(kg*10)/10; save(); } render(); }
+function setStartWeight(v){ const kg = num(v); S.startWeight = (kg > 20 && kg < 400) ? Math.round(kg*10)/10 : null; save(); render(); }
 function setGoal(v){ const kg = num(v); S.goal = (kg > 20 && kg < 400) ? Math.round(kg*10)/10 : null; save(); render(); }
 const shopKey = w => D.start + ":" + w;
 function toggleShop(w, i, v){ const k = shopKey(w); S.shop[k] = S.shop[k] || {}; S.shop[k][i] = v; save(); render(); }
@@ -242,7 +257,7 @@ function viewHoje(){
   return h;
 }
 
-function viewPlano(){
+function viewPlanoDias(){
   let h = `<h2>Plano de ${N} dias</h2><div class="mut" style="margin-bottom:6px">${br(START)} a ${br(END)}. Toque em um dia para ver e trocar as refeições.</div><div class="week">`;
   const tdy = iso(todayDate());
   for(let i = 0; i < N; i++){
@@ -259,10 +274,11 @@ function viewPlano(){
 
 function weightPoints(){
   const pts = Object.keys(S.weights).sort().map(k => ({d: parse(k), kg: S.weights[k].kg, k}));
-  if(!S.weights[iso(START)]) pts.unshift({d: new Date(START), kg: S.startWeight, k: "inicio", start: true});
+  if(S.startWeight != null && !S.weights[iso(START)]) pts.unshift({d: new Date(START), kg: S.startWeight, k: "inicio", start: true});
   return pts.sort((a,b) => a.d - b.d);
 }
 function chartSVG(pts){
+  if(!pts.length) return `<svg class="chart" viewBox="0 0 640 140" role="img" aria-label="Gráfico de peso vazio"><text x="320" y="70" text-anchor="middle" style="font-size:14px">Registre o primeiro peso para ver o gráfico.</text></svg>`;
   const W = 640, H = 300, L = 46, Rr = 16, T = 18, B = 36;
   let x0 = new Date(START), x1 = new Date(END);
   pts.forEach(p => { if(p.d < x0) x0 = new Date(p.d); if(p.d > x1) x1 = new Date(p.d); });
@@ -286,19 +302,20 @@ function chartSVG(pts){
   return s + `</svg>`;
 }
 function viewPeso(){
-  const pts = weightPoints(), first = pts[0], last = pts[pts.length-1];
-  const diff = last.kg - S.startWeight;
-  const spanDays = (last.d - first.d)/86400000;
-  const rate = spanDays >= 7 ? (last.kg - first.kg)/(spanDays/7) : null;
-  const remaining = S.goal ? last.kg - S.goal : null;
+  const pts = weightPoints(), has = pts.length > 0, first = pts[0], last = pts[pts.length-1];
+  const base = S.startWeight != null ? S.startWeight : (has ? first.kg : null);
+  const diff = has && base != null ? last.kg - base : null;
+  const spanDays = has ? (last.d - first.d)/86400000 : 0;
+  const rate = has && spanDays >= 7 ? (last.kg - first.kg)/(spanDays/7) : null;
+  const remaining = S.goal && has ? last.kg - S.goal : null;
   const tdy = clampDate(todayDate());
   const entries = Object.keys(S.weights).sort().reverse();
   const hasReal = entries.length > 0;
   let h = `<h2>Meu peso</h2>
   <div class="stats">
-    <div class="stat"><span>Peso inicial</span><b>${f1(S.startWeight)} kg</b></div>
-    <div class="stat"><span>Peso atual</span><b>${f1(last.kg)} kg</b></div>
-    <div class="stat"><span>Variação</span><b class="${diff<0?"good":diff>0?"bad":""}">${diff>0?"+":""}${f1(diff)} kg</b></div>
+    <div class="stat"><span>Peso inicial</span><b>${base != null ? f1(base)+" kg" : "–"}</b></div>
+    <div class="stat"><span>Peso atual</span><b>${has ? f1(last.kg)+" kg" : "–"}</b></div>
+    <div class="stat"><span>Variação</span><b class="${diff!==null&&diff<0?"good":diff!==null&&diff>0?"bad":""}">${diff!==null ? (diff>0?"+":"")+f1(diff)+" kg" : "–"}</b></div>
     <div class="stat"><span>${remaining!==null?"Falta para a meta":"Ritmo por semana"}</span><b>${remaining!==null?(remaining<=0?"🎉 meta!":f1(remaining)+" kg"):(rate!==null?(rate>0?"+":"")+f1(rate)+" kg":"–")}</b></div>
   </div>
   <div class="card"><div class="row sp" style="margin-bottom:6px"><b>Evolução</b><span class="mut">${hasReal?entries.length+" registro(s)":"sem registros ainda"}</span></div>${chartSVG(pts)}
@@ -313,7 +330,7 @@ function viewPeso(){
     <div class="tip">Pese-se 1 vez por semana, de manhã, antes de comer. Se registrar de novo na mesma data, o valor é atualizado.</div></div>
   <div class="card"><b>Peso inicial e meta</b>
     <div class="row" style="margin-top:10px;gap:8px">
-      <div style="flex:1"><label class="mut">Peso inicial (kg)</label><input style="width:100%" type="text" inputmode="decimal" value="${f1(S.startWeight)}" onchange="setStartWeight(this.value)"></div>
+      <div style="flex:1"><label class="mut">Peso inicial (kg)</label><input style="width:100%" type="text" inputmode="decimal" value="${S.startWeight != null ? f1(S.startWeight) : ""}" placeholder="opcional" onchange="setStartWeight(this.value)"></div>
       <div style="flex:1"><label class="mut">Meta (kg)</label><input style="width:100%" type="text" inputmode="decimal" value="${S.goal?f1(S.goal):""}" placeholder="opcional" onchange="setGoal(this.value)"></div>
     </div></div>`;
   h += `<h3>Registros (edite os valores aqui)</h3>`;
@@ -358,7 +375,7 @@ function viewReceitas(){
   return h;
 }
 
-const FOODS = [["Carnes, peixes e ovos", [["Ovos", "ok", "Cozido, mexido ou em omelete. Cerca de 0,5 g de carboidrato cada."], ["Frango (sobrecoxa, peito, coxa)", "ok", "0 g de carboidrato. Sem empanar."], ["Peixes e frutos do mar (salmão, tilápia, sardinha, atum, camarão)", "ok", "0 g de carboidrato. Atum e sardinha em lata: escolha natural ou em água."], ["Carne de porco (lombo, bisteca, pernil)", "ok", "0 g de carboidrato."], ["Carne bovina cozida (acém, músculo, panela de pressão)", "ok", "0 g de carboidrato. É a que você digere bem."], ["Bacon", "ok", "0 g de carboidrato. Sem exagero, por causa do sódio."], ["Presunto, peito de peru, mortadela", "mod", "Confira o rótulo: alguns levam amido e açúcar."], ["Salsicha e linguiça", "mod", "Só as de carne pura, sem amido nem açúcar."], ["Hambúrguer pronto e empanados (nuggets, milanesa)", "no", "Levam farinha e pão ralado."], ["Surimi (kani)", "no", "Feito com amido."]]], ["Laticínios e leites", [["Queijos (muçarela, parmesão, prato, minas padrão, provolone)", "ok", "0 a 1 g por porção de 30 g."], ["Cream cheese", "ok", "Cerca de 1 g em 30 g. Escolha um sem amido."], ["Creme de leite fresco e manteiga", "ok", "Cerca de 1 g em 30 g de creme. Manteiga e ghee: 0 g."], ["Leite de soja ou de amêndoas, sem açúcar", "ok", "Cerca de 1 g por copo de 250 ml. Serve para a vitamina de abacate."], ["Iogurte natural integral ou grego, sem açúcar", "mod", "4 a 6 g por 100 g. Porção de 100 a 150 g."], ["Requeijão, ricota, cottage", "mod", "2 a 4 g por 100 g. Confira se tem amido."], ["Leite de coco (sem açúcar)", "mod", "Confira o rótulo. Pouca quantidade."], ["Leite de vaca (integral, desnatado, sem lactose)", "no", "Cerca de 12 g de carboidrato num copo de 250 ml, quase metade do seu limite."], ["Iogurte de fruta, bebida láctea, achocolatado, leite condensado", "no", "Cheios de açúcar."]]], ["Verduras e legumes", [["Folhas: alface, rúcula, agrião, espinafre, couve, acelga", "ok", "0,5 a 2 g por 100 g. À vontade."], ["Brócolis, couve-flor, repolho, aspargo, palmito, berinjela", "ok", "2 a 4 g por 100 g."], ["Cogumelos (champignon, shimeji)", "ok", "2 a 3 g por 100 g."], ["Tomate, aipo, vagem", "ok", "3 a 4 g por 100 g. Um tomate pequeno por refeição é suficiente."], ["Abobrinha e pepino", "ok", "2 a 3 g por 100 g. Liberados, mas você não gosta, então ficam fora do cardápio."], ["Tofu", "ok", "Cerca de 2 g por 100 g."], ["Pimentão, cebola e alho", "mod", "Como tempero, em pouca quantidade. Cebola tem cerca de 8 g por 100 g."], ["Cenoura", "mod", "Cerca de 7 g por 100 g. Só ralada como tempero (1 colher de sopa ≈ 1 g), nunca como acompanhamento."], ["Ervilha-torta", "mod", "Cerca de 4 g por 100 g. Pouca quantidade."], ["Abóbora (cabotiá, moranga)", "mod", "5 a 8 g por 100 g. Até 50 g por refeição."], ["Ervilha (fresca, em lata, seca)", "no", "8 a 14 g por 100 g. A de lata costuma ter açúcar."], ["Beterraba", "no", "Cerca de 7 a 8 g por 100 g."], ["Milho (verde, pipoca, canjica)", "no", "Cerca de 19 g por 100 g."], ["Batata, batata-doce, mandioca (aipim), inhame, cará", "no", "15 a 30 g por 100 g. Passam do limite do dia."], ["Feijão, lentilha, grão-de-bico, soja em grão", "no", "10 a 20 g por 100 g cozido."]]], ["Frutas", [["Abacate", "ok", "Cerca de 2 g por 100 g. No seu plano, só em vitamina com leite vegetal."], ["Azeitonas", "ok", "Cerca de 1 g por 100 g."], ["Limão (suco e raspas)", "ok", "Para temperar. 1 colher de sopa ≈ 1 g."], ["Morango, framboesa, amora", "mod", "4 a 6 g por 100 g. Até 50 g (uns 4 morangos)."], ["Mirtilo (blueberry)", "mod", "Cerca de 12 g por 100 g. Só 1 colher de sopa."], ["Coco ralado sem açúcar", "mod", "1 a 2 colheres de sopa."], ["Banana, maçã, pera, uva, manga, abacaxi, melancia, mamão, laranja, tangerina, kiwi, caqui", "no", "8 a 20 g por 100 g. Uma unidade já gasta metade do seu limite do dia."], ["Frutas secas (uva-passa, tâmara, damasco) e sucos de fruta", "no", "Açúcar concentrado."]]], ["Oleaginosas e sementes", [["Castanha-do-pará, nozes, macadâmia, avelã, pecã", "ok", "15 a 30 g por dia, cerca de 1 a 2 g de carboidrato."], ["Chia, linhaça, gergelim, sementes de girassol e de abóbora", "ok", "1 colher de sopa ≈ 1 g de carboidrato líquido."], ["Amêndoas, pistache, amendoim e pasta de amendoim sem açúcar", "mod", "20 g ≈ 2 a 3 g. Leia o rótulo da pasta."], ["Castanha de caju", "mod", "15 g ≈ 4 g de carboidrato. Cuidado com o punhado."]]], ["Gorduras e óleos", [["Azeite extra virgem, óleo de coco, manteiga, ghee, banha", "ok", "0 g de carboidrato."], ["Maionese sem açúcar", "ok", "Confira o rótulo: sem açúcar e sem amido."], ["Óleo de soja, milho ou girassol, margarina", "mod", "Podem, mas prefira azeite e manteiga."]]], ["Cereais, pães e farinhas", [["Couve-flor ralada (no lugar do arroz), macarrão de shirataki", "ok", "Substitutos com pouquíssimo carboidrato."], ["Farinha de amêndoas", "mod", "Para receitas low carb. Pouca quantidade."], ["Farinha de coco e pão low carb industrializado", "mod", "Confira o carboidrato líquido por porção."], ["Arroz (branco, integral), macarrão, pão (inclusive integral), tapioca, cuscuz, aveia, granola, cereal matinal, quinoa", "no", "15 a 75 g por 100 g."], ["Biscoito, bolo, pizza, farofa, farinha de trigo e de mandioca, polvilho", "no", "Feitos de farinha e amido."]]], ["Doces e adoçantes", [["Stevia, eritritol, sucralose", "ok", "Prefira os líquidos ou puros. Sachês com maltodextrina contam cerca de 1 g."], ["Gelatina diet (sem açúcar)", "ok", "Cerca de 0 g de carboidrato, mas com pouco nutriente. Fica melhor com creme de leite fresco."], ["Chocolate amargo 70% ou mais", "mod", "10 g (1 quadradinho) ≈ 2 a 3 g de carboidrato."], ["Cacau em pó 100%", "mod", "1 colher de sopa ≈ 1 g."], ["Xilitol, maltitol, sorbitol", "mod", "Elevam um pouco a glicemia e podem dar desconforto no intestino."], ["Açúcar (branco, mascavo, demerara, de coco), mel, melado, xarope, geleia, doce de leite", "no", "Carboidrato puro."], ["Chocolate ao leite e branco, sorvete, pudim, doces em geral", "no", "Cheios de açúcar."]]], ["Bebidas", [["Água, água com gás, café e chá sem açúcar, caldos caseiros", "ok", "À vontade. Meta: 2 a 2,5 L de água por dia."], ["Refrigerante ou suco zero, energético zero", "mod", "Sem açúcar, mas mantêm a vontade de doce. No máximo 1 por dia."], ["Vinho seco e destilados (vodka, gin, whisky)", "mod", "1 taça de vinho (150 ml) ≈ 3 a 4 g. O álcool atrapalha o emagrecimento e o treino."], ["Água de coco", "no", "Cerca de 7 g de carboidrato num copo de 200 ml."], ["Refrigerante comum, suco (natural, de caixinha ou em pó), isotônico", "no", "Açúcar líquido."], ["Cerveja, caipirinha, vinho doce, drinques", "no", "Carboidrato e açúcar."]]], ["Molhos e temperos", [["Sal, pimenta, ervas, especiarias, alho, limão, vinagre, mostarda sem açúcar", "ok", "À vontade."], ["Shoyu", "mod", "1 colher de sopa ≈ 1 g. Muito sódio."], ["Molho de tomate pronto, extrato de tomate", "mod", "2 colheres de sopa de extrato ≈ 3 g. Molhos prontos costumam ter açúcar."], ["Caldo em cubo ou em pó", "mod", "Leia o rótulo: amido e açúcar. Prefira caldo caseiro."], ["Ketchup, barbecue, teriyaki, molho agridoce", "no", "Têm muito açúcar."]]], ["Industrializados", [["Whey isolado sem açúcar", "ok", "Cerca de 1 g por dose de 25 g."], ["Produtos diet, fit e light (barrinhas, pães, biscoitos)", "mod", "Diet não quer dizer low carb. Olhe o carboidrato líquido no rótulo."], ["Salgadinhos, pão de queijo, coxinha, pastel, empada", "no", "Feitos de farinha e fritura."]]]];
+const FOODS = [["Carnes, peixes e ovos", [["Ovos", "ok", "Cozido, mexido ou em omelete. Cerca de 0,5 g de carboidrato cada."], ["Frango (sobrecoxa, peito, coxa)", "ok", "0 g de carboidrato. Sem empanar."], ["Peixes e frutos do mar (salmão, tilápia, sardinha, atum, camarão)", "ok", "0 g de carboidrato. Atum e sardinha em lata: escolha natural ou em água."], ["Carne de porco (lombo, bisteca, pernil)", "ok", "0 g de carboidrato."], ["Carne bovina cozida (acém, músculo, panela de pressão)", "ok", "0 g de carboidrato. Cozida até desmanchar, fica mais fácil de digerir."], ["Bacon", "ok", "0 g de carboidrato. Sem exagero, por causa do sódio."], ["Presunto, peito de peru, mortadela", "mod", "Confira o rótulo: alguns levam amido e açúcar."], ["Salsicha e linguiça", "mod", "Só as de carne pura, sem amido nem açúcar."], ["Hambúrguer pronto e empanados (nuggets, milanesa)", "no", "Levam farinha e pão ralado."], ["Surimi (kani)", "no", "Feito com amido."]]], ["Laticínios e leites", [["Queijos (muçarela, parmesão, prato, minas padrão, provolone)", "ok", "0 a 1 g por porção de 30 g."], ["Cream cheese", "ok", "Cerca de 1 g em 30 g. Escolha um sem amido."], ["Creme de leite fresco e manteiga", "ok", "Cerca de 1 g em 30 g de creme. Manteiga e ghee: 0 g."], ["Leite de soja ou de amêndoas, sem açúcar", "ok", "Cerca de 1 g por copo de 250 ml. Serve para a vitamina de abacate."], ["Iogurte natural integral ou grego, sem açúcar", "mod", "4 a 6 g por 100 g. 1 porção por dia, de 100 a 150 g (nunca o pote inteiro)."], ["Iogurte natural desnatado, sem açúcar", "mod", "5 a 6 g por 100 g. Pode, mas tem menos gordura: compense com nozes ou creme de leite fresco."], ["Iogurte diet ou zero, com sabor ou fruta", "mod", "Só se o rótulo mostrar até 5 g de carboidrato por 100 g e nada de açúcar, amido ou maltodextrina. Muitos passam disso."], ["Requeijão, ricota, cottage", "mod", "2 a 4 g por 100 g. Confira se tem amido."], ["Leite de coco (sem açúcar)", "mod", "Confira o rótulo. Pouca quantidade."], ["Leite de vaca (integral, desnatado, sem lactose)", "no", "Cerca de 12 g de carboidrato num copo de 250 ml, quase metade do limite diário."], ["Iogurte comum de fruta, bebida láctea (não é iogurte), achocolatado, leite condensado", "no", "Cheios de açúcar."]]], ["Verduras e legumes", [["Folhas: alface, rúcula, agrião, espinafre, couve, acelga", "ok", "0,5 a 2 g por 100 g. À vontade."], ["Brócolis, couve-flor, repolho, aspargo, palmito, berinjela", "ok", "2 a 4 g por 100 g."], ["Cogumelos (champignon, shimeji)", "ok", "2 a 3 g por 100 g."], ["Tomate, aipo, vagem", "ok", "3 a 4 g por 100 g. Um tomate pequeno por refeição é suficiente."], ["Abobrinha e pepino", "ok", "2 a 3 g por 100 g. Liberados, mas não entram no cardápio deste plano."], ["Tofu", "ok", "Cerca de 2 g por 100 g."], ["Pimentão, cebola e alho", "mod", "Como tempero, em pouca quantidade. Cebola tem cerca de 8 g por 100 g."], ["Cenoura", "mod", "Cerca de 7 g por 100 g. Só ralada como tempero (1 colher de sopa ≈ 1 g), nunca como acompanhamento."], ["Ervilha-torta", "mod", "Cerca de 4 g por 100 g. Pouca quantidade."], ["Abóbora (cabotiá, moranga)", "mod", "5 a 8 g por 100 g. Até 50 g por refeição."], ["Ervilha (fresca, em lata, seca)", "no", "8 a 14 g por 100 g. A de lata costuma ter açúcar."], ["Beterraba", "no", "Cerca de 7 a 8 g por 100 g."], ["Milho (verde, pipoca, canjica)", "no", "Cerca de 19 g por 100 g."], ["Batata, batata-doce, mandioca (aipim), inhame, cará", "no", "15 a 30 g por 100 g. Passam do limite do dia."], ["Feijão, lentilha, grão-de-bico, soja em grão", "no", "10 a 20 g por 100 g cozido."]]], ["Frutas", [["Abacate", "ok", "Cerca de 2 g por 100 g. No cardápio, aparece só em vitamina com leite vegetal."], ["Azeitonas", "ok", "Cerca de 1 g por 100 g."], ["Limão (suco e raspas)", "ok", "Para temperar. 1 colher de sopa ≈ 1 g."], ["Morango, framboesa, amora", "mod", "4 a 6 g por 100 g. Até 50 g (uns 4 morangos)."], ["Mirtilo (blueberry)", "mod", "Cerca de 12 g por 100 g. Só 1 colher de sopa."], ["Coco ralado sem açúcar", "mod", "1 a 2 colheres de sopa."], ["Banana, maçã, pera, uva, manga, abacaxi, melancia, mamão, laranja, tangerina, kiwi, caqui", "no", "8 a 20 g por 100 g. Uma unidade já gasta metade do limite do dia."], ["Frutas secas (uva-passa, tâmara, damasco) e sucos de fruta", "no", "Açúcar concentrado."]]], ["Oleaginosas e sementes", [["Castanha-do-pará, nozes, macadâmia, avelã, pecã", "ok", "15 a 30 g por dia, cerca de 1 a 2 g de carboidrato."], ["Chia, linhaça, gergelim, sementes de girassol e de abóbora", "ok", "1 colher de sopa ≈ 1 g de carboidrato líquido."], ["Amêndoas, pistache, amendoim e pasta de amendoim sem açúcar", "mod", "20 g ≈ 2 a 3 g. Leia o rótulo da pasta."], ["Castanha de caju", "mod", "15 g ≈ 4 g de carboidrato. Cuidado com o punhado."]]], ["Gorduras e óleos", [["Azeite extra virgem, óleo de coco, manteiga, ghee, banha", "ok", "0 g de carboidrato."], ["Maionese sem açúcar", "ok", "Confira o rótulo: sem açúcar e sem amido."], ["Óleo de soja, milho ou girassol, margarina", "mod", "Podem, mas prefira azeite e manteiga."]]], ["Cereais, pães e farinhas", [["Couve-flor ralada (no lugar do arroz), macarrão de shirataki", "ok", "Substitutos com pouquíssimo carboidrato."], ["Farinha de amêndoas", "mod", "Para receitas low carb. Pouca quantidade."], ["Farinha de coco e pão low carb industrializado", "mod", "Confira o carboidrato líquido por porção."], ["Arroz (branco, integral), macarrão, pão (inclusive integral), tapioca, cuscuz, aveia, granola, cereal matinal, quinoa", "no", "15 a 75 g por 100 g."], ["Biscoito, bolo, pizza, farofa, farinha de trigo e de mandioca, polvilho", "no", "Feitos de farinha e amido."]]], ["Doces e adoçantes", [["Stevia, eritritol, sucralose", "ok", "Prefira os líquidos ou puros. Sachês com maltodextrina contam cerca de 1 g."], ["Gelatina diet (sem açúcar)", "ok", "Cerca de 0 g de carboidrato, mas com pouco nutriente. Fica melhor com creme de leite fresco."], ["Chocolate amargo 70% ou mais", "mod", "10 g (1 quadradinho) ≈ 2 a 3 g de carboidrato."], ["Cacau em pó 100%", "mod", "1 colher de sopa ≈ 1 g."], ["Xilitol, maltitol, sorbitol", "mod", "Elevam um pouco a glicemia e podem dar desconforto no intestino."], ["Açúcar (branco, mascavo, demerara, de coco), mel, melado, xarope, geleia, doce de leite", "no", "Carboidrato puro."], ["Chocolate ao leite e branco, sorvete, pudim, doces em geral", "no", "Cheios de açúcar."]]], ["Bebidas", [["Água, água com gás, café e chá sem açúcar, caldos caseiros", "ok", "À vontade. Meta: 2 a 2,5 L de água por dia."], ["Refrigerante ou suco zero, energético zero", "mod", "Sem açúcar, mas mantêm a vontade de doce. No máximo 1 por dia."], ["Vinho seco e destilados (vodka, gin, whisky)", "mod", "1 taça de vinho (150 ml) ≈ 3 a 4 g. O álcool atrapalha o emagrecimento e o treino."], ["Água de coco", "no", "Cerca de 7 g de carboidrato num copo de 200 ml."], ["Refrigerante comum, suco (natural, de caixinha ou em pó), isotônico", "no", "Açúcar líquido."], ["Cerveja, caipirinha, vinho doce, drinques", "no", "Carboidrato e açúcar."]]], ["Molhos e temperos", [["Sal, pimenta, ervas, especiarias, alho, limão, vinagre, mostarda sem açúcar", "ok", "À vontade."], ["Shoyu", "mod", "1 colher de sopa ≈ 1 g. Muito sódio."], ["Molho de tomate pronto, extrato de tomate", "mod", "2 colheres de sopa de extrato ≈ 3 g. Molhos prontos costumam ter açúcar."], ["Caldo em cubo ou em pó", "mod", "Leia o rótulo: amido e açúcar. Prefira caldo caseiro."], ["Ketchup, barbecue, teriyaki, molho agridoce", "no", "Têm muito açúcar."]]], ["Industrializados", [["Whey isolado sem açúcar", "ok", "Cerca de 1 g por dose de 25 g."], ["Produtos diet, fit e light (barrinhas, pães, biscoitos)", "mod", "Diet não quer dizer low carb. Olhe o carboidrato líquido no rótulo."], ["Salgadinhos, pão de queijo, coxinha, pastel, empada", "no", "Feitos de farinha e fritura."]]]];
 const FOOD_ST = {ok:["Livre","ok"], mod:["Com moderação","mod"], no:["Evitar","no"]};
 let foodQ = "", foodF = "all";
 function norm(t){ return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
@@ -378,20 +395,135 @@ function foodsHTML(){
 }
 function setFoodQ(v){ foodQ = v; const el = document.getElementById("foodlist"); if(el) el.innerHTML = foodsHTML(); }
 function setFoodF(f){ foodF = f; render(); }
-function viewAlimentos(){
+const PORCOES = [["🟢 À vontade", "ok", "Não gastam carboidrato. Mas atenção: o objetivo é emagrecer, então proteínas e gorduras têm limite de quantidade (veja os grupos abaixo).", [["Folhas (alface, rúcula, agrião, espinafre, couve, acelga)", "à vontade", ""], ["Água, água com gás, café e chá sem açúcar", "à vontade", "Meta de 2 a 2,5 L de água por dia."], ["Temperos (ervas, especiarias, alho, limão, vinagre, mostarda sem açúcar)", "à vontade", "Sal sem exagero."]]], ["🟡 Proteínas e laticínios", "mod", "O carboidrato é quase zero, mas as calorias contam.", [["Frango, peixes, carne de porco ou carne bovina cozida", "120 a 150 g cozidos", "Por almoço e por jantar (cerca de 250 a 300 g no dia)."], ["Ovos", "até 4 por dia", "Cozidos ou mexidos."], ["Queijos (muçarela, parmesão, prato, minas padrão)", "até 100 g por dia", "Cerca de 3 porções de 30 g."], ["Iogurte natural sem açúcar", "1 por dia", "Porção de 100 a 150 g."], ["Cream cheese", "até 40 g por dia", ""], ["Creme de leite fresco", "até 50 g por dia", ""], ["Presunto ou peito de peru", "até 3 fatias por dia", "Confira o rótulo."], ["Bacon", "até 2 fatias por dia", ""], ["Tofu", "100 a 150 g por refeição", ""], ["Whey isolado sem açúcar", "1 dose de 25 g", "Só nos dias de treino. Opcional."]]], ["🟡 Gorduras, castanhas e sementes", "mod", "Dão saciedade, mas são calóricas.", [["Azeite, manteiga e óleo de coco", "3 a 4 colheres de sopa por dia", "Todas as gorduras de cozinha somadas."], ["Castanha-do-pará, nozes, macadâmia", "30 a 40 g por dia", "Um punhado pequeno."], ["Amêndoas, pistache, amendoim", "até 20 g por dia", "Entram nos 40 g de oleaginosas."], ["Abacate", "80 g por dia", "Na vitamina com leite vegetal."], ["Chia, linhaça, gergelim", "1 colher de sopa por dia", ""], ["Maionese sem açúcar", "1 colher de sopa por dia", ""], ["Azeitonas", "até 30 g por dia", "Cerca de 6 a 8 unidades."]]], ["🟡 Verduras e legumes", "mod", "Dão volume ao prato, mas têm carboidrato.", [["Brócolis, couve-flor, repolho, berinjela, vagem, aspargo, palmito", "100 a 200 g por refeição", "Almoço e jantar."], ["Cogumelos", "até 100 g por refeição", ""], ["Tomate", "1 pequeno por refeição", ""], ["Abobrinha e pepino", "até 100 g por refeição", "Liberados."], ["Cenoura", "1 colher de sopa ralada por dia", "Só como tempero."], ["Cebola e pimentão", "1/4 de unidade por dia", "Como tempero."], ["Abóbora", "até 50 g por refeição", ""]]], ["🟡 Bebidas, doces e extras", "mod", "", [["Leite de soja ou de amêndoas, sem açúcar", "até 500 ml por dia", "Vitamina e pós-treino."], ["Frutas vermelhas (morango, framboesa, amora)", "até 50 g por dia", ""], ["Coco ralado sem açúcar", "1 a 2 colheres de sopa por dia", ""], ["Gelatina diet sem açúcar", "1 pote por dia", ""], ["Chocolate 70% ou mais", "10 g por dia", "1 quadradinho."], ["Refrigerante ou suco zero", "no máximo 1 por dia", ""], ["Adoçante", "sem exagero", "Prefira stevia pura ou líquida."]]], ["🔴 Fora do plano", "no", "Nenhuma quantidade.", [["Açúcar, mel, doces, sorvete e chocolate ao leite", "nenhuma", ""], ["Pão, massas, arroz, aveia, farinhas, bolo e biscoito", "nenhuma", ""], ["Batata, mandioca, milho, ervilha, beterraba, feijão e lentilha", "nenhuma", ""], ["Frutas comuns (banana, maçã, uva, manga...) e sucos", "nenhuma", ""], ["Leite de vaca", "nenhuma", "Cerca de 12 g de carboidrato por copo."], ["Refrigerante comum, cerveja e drinques", "nenhuma", ""]]]];
+const SUBS = [["Sobrecoxa", "peito, coxa de frango ou peixe"], ["Salmão", "tilápia, sardinha ou atum"], ["Couve-flor", "brócolis, repolho ou espinafre"], ["Espinafre", "couve ou folhas verdes"], ["Muçarela", "outro queijo (prato, parmesão, minas padrão)"], ["Castanha-do-pará", "nozes ou macadâmia"], ["Creme de leite fresco", "metade de cream cheese, ou mais azeite"], ["Cogumelos", "mais verdura"], ["Qualquer refeição do cardápio", "repetir outra de um dia anterior, com as mesmas porções"]];
+let foodMode = "lista";
+function setFoodMode(m){ foodMode = m; render(); }
+function viewPorcoes(){
+  let h = `<div class="card"><b>Como usar</b><div class="ing" style="font-size:14px;margin-top:4px">Este guia mostra quanto de cada alimento cabe em <b>1 dia</b>. Serve para você improvisar quando faltar um item do cardápio, desde que some o total e respeite o limite de carboidrato (20 g).</div></div>`;
+  PORCOES.forEach(function(g){
+    h += `<h3>${esc(g[0])}</h3>`;
+    if(g[2]) h += `<div class="mut" style="margin:-4px 0 8px">${esc(g[2])}</div>`;
+    h += `<div class="card" style="padding:4px 14px">`;
+    g[3].forEach(function(r, i){
+      h += `<div class="por ${i?"":"first"}"><div><div class="nm">${esc(r[0])}</div>${r[2] ? `<div class="ing">${esc(r[2])}</div>` : ""}</div><span class="pill ${g[1]}">${esc(r[1])}</span></div>`;
+    });
+    h += `</div>`;
+  });
+  h += `<h3>🔁 Faltou algum item?</h3><div class="card" style="padding:4px 14px">` + SUBS.map(function(r, i){
+    return `<div class="por ${i?"":"first"}"><div class="nm">${esc(r[0])}</div><div class="mut" style="text-align:right">${esc(r[1])}</div></div>`;
+  }).join("") + `</div>`;
+  return h;
+}
+function viewAlimentosLista(){
   const fl = [["all","Todos"],["ok","Livres"],["mod","Moderação"],["no","Evitar"]];
-  return `<h2>O que pode e o que não pode</h2>
-  <div class="card"><b>Regra rápida</b><div class="ing" style="font-size:14px;margin-top:4px">Carboidrato líquido = carboidrato total menos fibras. Seu limite é de <b>20 g por dia</b> (até 25 g). Ao ler o rótulo, desconfie de açúcar, amido, maltodextrina e farinha. "Diet", "fit" e "light" não garantem pouco carboidrato.</div></div>
+  return `
+  <div class="card"><b>Regra rápida</b><div class="ing" style="font-size:14px;margin-top:4px">Carboidrato líquido = carboidrato total menos fibras. O limite é de <b>20 g por dia</b> (até 25 g). Ao ler o rótulo, desconfie de açúcar, amido, maltodextrina e farinha. "Diet", "fit" e "light" não garantem pouco carboidrato.</div></div>
   <input type="search" id="foodq" placeholder="Buscar alimento (ex.: cenoura, ervilha)" value="${esc(foodQ)}" oninput="setFoodQ(this.value)" style="width:100%;margin-bottom:10px" aria-label="Buscar alimento">
   <div class="wk">${fl.map(function(x){ return `<button class="btn sm ${x[0]===foodF?"on":""}" onclick="setFoodF('${x[0]}')">${x[1]}</button>`; }).join("")}</div>
   <div id="foodlist">${foodsHTML()}</div>
   <div class="tip">Valores aproximados de carboidrato líquido. As porções de "com moderação" cabem no limite do dia se você somar as outras refeições.</div>`;
 }
 
+const TIPS = [["🏷️", "Como ler o rótulo", ["Olhe o tamanho da porção primeiro: o valor de carboidrato é por porção, não por pote.", "Carboidrato líquido = carboidrato total menos fibras.", "Na lista de ingredientes, procure açúcar com outros nomes: xarope de glicose ou de milho, maltodextrina, dextrose, frutose, sacarose, açúcar invertido, mel, melado.", "Amido e farinha também são carboidrato escondido (aparecem em molhos, embutidos, iogurtes e requeijão).", "\"Diet\", \"fit\", \"zero\" e \"light\" não garantem pouco carboidrato. Confira sempre a tabela.", "Quanto mais para o início da lista aparece o ingrediente, mais dele o produto tem."]], ["🎯", "Limite de carboidrato", ["O limite é de 20 g de carboidrato líquido por dia (até 25 g).", "Some tudo: verduras, queijos, castanhas, molhos e temperos também contam.", "O app avisa no dia se o planejado passar de 25 g."]], ["🥛", "Iogurte, leite e gelatina", ["Iogurte natural, grego ou comum, sem açúcar: 1 porção por dia, de 100 a 150 g (4 a 6 g de carboidrato por 100 g).", "Desnatado pode, mas tem menos gordura. Compense com nozes ou creme de leite fresco.", "Iogurte diet ou zero com sabor ou fruta: só se o rótulo mostrar até 5 g de carboidrato por 100 g, sem açúcar, amido ou maltodextrina.", "\"Bebida láctea\" não é iogurte e costuma ter açúcar.", "Leite de vaca tem cerca de 12 g de carboidrato por copo de 250 ml. Prefira leite de soja ou de amêndoas, sem açúcar.", "Gelatina diet (sem açúcar) pode. Tem pouco nutriente e fica melhor com creme de leite fresco."]], ["💧", "Água e sal", ["Beba de 2 a 2,5 litros de água por dia.", "Não economize no sal nas primeiras semanas: a keto faz o corpo perder sódio.", "Um caldo de legumes ou de frango caseiro, sem açúcar, ajuda contra a \"gripe keto\" (cansaço e dor de cabeça).", "Leve água para a academia."]], ["🍳", "Preparo e trocas", ["Ovo cozido pode virar mexido: some 5 g de manteiga (cerca de +45 kcal e +4 g de gordura).", "Carne bovina só cozida até desmanchar (panela de pressão) fica mais fácil de digerir. Pode trocar por frango ou peixe sem mudar os macros.", "Qualquer refeição pode ser trocada por outra do mesmo tipo na aba Hoje.", "Cozinhe duas vezes por semana (domingo e quarta) e congele o que não for comer em até 3 dias. Peixes ficam melhores em até 2 dias na geladeira.", "A salada de atum se monta na hora, com os ingredientes separados."]], ["🚽", "Intestino", ["A keto pode prender o intestino.", "Mantenha as verduras e a água e, se precisar, use 1 colher de sopa de chia ou linhaça por dia."]], ["🏋️", "Treino e pós-treino", ["Comece com 2 a 3 treinos por semana, corpo inteiro, carga leve nas 2 primeiras semanas.", "Coma o pós-treino em até 1 a 2 horas depois do treino. Nos dias sem treino, siga o cardápio normal.", "Nas primeiras 2 a 4 semanas é comum sentir fraqueza.", "Se sentir tontura, falta de ar, dor no peito ou câmbras fortes, pare, descanse e fale com seu médico.", "Whey é opcional: o pós-treino com ovos e queijo resolve sem ele."]], ["⚖️", "Peso e medidas", ["Pese-se 1 vez por semana, de manhã, antes de comer.", "O peso oscila (líquidos, músculo). Meça a cintura e tire uma foto a cada 2 semanas.", "Não reduza as calorias por conta própria se o peso demorar a cair."]], ["🩺", "Saúde e acompanhamento", ["Converse com seu médico antes de começar, principalmente se usa remédio para pressão, diabetes ou colesterol: a dose pode precisar de ajuste.", "Faça exames de colesterol, glicemia e função renal em 2 a 3 meses.", "Depois da menopausa vale cuidar do cálcio. Os queijos ajudam; fale com o médico sobre suplementar.", "Suplementos como magnésio: só com orientação médica."]], ["📆", "Por quanto tempo seguir", ["Não existe prazo fixo.", "Para emagrecer, costuma-se seguir de 3 a 6 meses, e até cerca de 1 ano com acompanhamento.", "Depois, reintroduza carboidratos aos poucos (50 a 100 g por dia) para manter o peso.", "Mais que isso, só com médico, com exames de colesterol, rins e fígado e atenção à saúde dos ossos."]], ["💾", "Seus dados no app", ["O que você registra fica só neste aparelho, no navegador ou no app instalado.", "Se limpar os dados do navegador ou desinstalar o app, os registros somem.", "Na aba Peso, use o backup de vez em quando. Ele também serve para levar os dados para outro aparelho."]]];
+function viewDicas(){
+  let h = `<h2>Dicas e recomendações</h2><div class="mut" style="margin-bottom:10px">Tudo o que vale lembrar durante o plano, em um só lugar.</div>`;
+  TIPS.forEach(function(t){
+    h += `<div class="card tipcard"><div class="row"><span style="font-size:26px">${t[0]}</span><b style="font-size:16px">${esc(t[1])}</b></div><ul>${t[2].map(function(x){ return "<li>" + esc(x) + "</li>"; }).join("")}</ul></div>`;
+  });
+  return h;
+}
+
+const CONG = [["Pode (só o vegetal)", "ok", [["Brócolis", "1 a 3 g", "Livre. 100 a 200 g por refeição."], ["Espinafre em folhas", "1 a 2 g", "Livre."], ["Couve-flor", "2 a 3 g", "Livre. Algumas marcas levam ácido cítrico, que não muda o carboidrato."], ["Couve-manteiga", "1 a 3 g", "Livre."], ["Champignon fatiado", "2 g", "Livre."], ["Aspargos", "2 a 3 g", "Livre."]]], ["Pode, com limite", "mod", [["Vagem", "3 a 4 g", "Até 100 g por refeição."], ["Cebola picada", "cerca de 8 g", "Só como tempero: 1/4 de cebola por dia."], ["Alho picado", "cerca de 1 g", "Por colher de chá. Tempero, sem problema."], ["Abóbora em cubos", "5 a 8 g", "Até 50 g por refeição."]]], ["Evite", "no", [["Ervilha, milho, mandioca, batata (inclusive palito pré-frita)", "alto", "Carboidrato demais."], ["Misturas de legumes (mix tradicional, mistura de 4 legumes)", "alto", "Trazem cenoura, ervilha e milho."], ["Anel de cebola, empanados e legumes à milanesa", "alto", "Levam pão ralado e farinha de trigo."], ["Refogados, cremosos e legumes no molho", "alto", "Costumam ter farinha, amido ou açúcar. Confira o rótulo."]]]];
+function viewCongelados(){
+  let h = `<div class="card"><b>Congelados são bons aliados</b><div class="ing" style="font-size:14px;margin-top:4px">O congelamento não acrescenta carboidrato. Vegetais congelados de uma linha só (brócolis, espinafre, couve-flor, vagem) valem o mesmo que o vegetal fresco. O que muda tudo é o que vem junto na embalagem.</div></div>`;
+  CONG.forEach(function(g){
+    h += `<h3>${esc(g[0])}</h3><div class="card" style="padding:4px 14px">`;
+    g[2].forEach(function(r, i){
+      h += `<div class="por ${i?"":"first"}"><div><div class="nm">${esc(r[0])}</div>${r[2] ? `<div class="ing">${esc(r[2])}</div>` : ""}</div><span class="pill ${g[1]}">${esc(r[1])}</span></div>`;
+    });
+    h += `</div>`;
+  });
+  h += `<div class="tip">Carboidrato líquido por 100 g de vegetal cozido, valores de referência aproximados (tabelas como TACO e USDA). A tabela nutricional da embalagem sempre vale mais.</div>
+  <h3>🥬 Só frescos</h3><div class="card"><div class="ing" style="font-size:14px">Alface, rúcula, agrião e outras folhas de salada não congelam bem. Compre frescas.</div></div>
+  <h3>🛒 Na hora da compra</h3><div class="card tipcard"><ul>
+    <li>Leia a lista de ingredientes: tem que ser só o vegetal (e sal, no máximo).</li>
+    <li>Olhe o carboidrato na tabela nutricional, por porção.</li>
+    <li>Fuja das palavras "mistura", "refogado", "cremoso", "no molho" e "empanado".</li>
+    <li>Pode pesar o vegetal ainda congelado: a diferença para o cozido é pequena.</li>
+    <li>Prepare no vapor ou refogue direto no azeite, sem precisar descongelar.</li>
+  </ul></div>`;
+  return h;
+}
+function viewAlimentos(){
+  const modes = [["lista","Pode ou não pode"],["porcoes","Quanto por dia"],["congelados","Congelados"]];
+  return `<h2>Alimentos</h2><div class="wk">${modes.map(function(m){ return `<button class="btn ${m[0]===foodMode?"on":""}" onclick="setFoodMode('${m[0]}')">${m[1]}</button>`; }).join("")}</div>` + (foodMode === "porcoes" ? viewPorcoes() : foodMode === "congelados" ? viewCongelados() : viewAlimentosLista());
+}
+
+let planMode = "dias";
+function setPlanMode(m){ planMode = m; render(); }
+function viewPlano(){
+  const modes = [["dias","Cardápio"],["receitas","Receitas"]];
+  return `<div class="wk">${modes.map(function(m){ return `<button class="btn ${m[0]===planMode?"on":""}" onclick="setPlanMode('${m[0]}')">${m[1]}</button>`; }).join("")}</div>` + (planMode === "receitas" ? viewReceitas() : viewPlanoDias());
+}
+
+/* ---------- treinos ---------- */
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+let trainMonth = null;
+function shiftMonth(n){ const m = trainMonth || new Date(); trainMonth = new Date(m.getFullYear(), m.getMonth() + n, 1); render(); }
+function cycleTrain(key){
+  const t = S.train[key] || {}, a = !!t.a, p = !!t.p; let n;
+  if(!a && !p) n = {a:true}; else if(a && !p) n = {p:true}; else if(!a && p) n = {a:true, p:true}; else n = null;
+  if(n) S.train[key] = n; else delete S.train[key];
+  save(); render();
+}
+function setTrainGoal(k, v){ const n = parseInt(v, 10); S.trainGoal[k] = (n >= 0 && n <= 7) ? n : S.trainGoal[k]; save(); render(); }
+function viewTreinos(){
+  const base = trainMonth || (trainMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const y = base.getFullYear(), mo = base.getMonth(), dim = new Date(y, mo + 1, 0).getDate(), lead = new Date(y, mo, 1).getDay();
+  const tdy = iso(todayDate()), G = S.trainGoal;
+  let cells = "", weeks = [], A = 0, Pi = 0, active = 0;
+  for(let i = 0; i < lead; i++) cells += `<div></div>`;
+  for(let d = 1; d <= dim; d++){
+    const key = y + "-" + pad(mo + 1) + "-" + pad(d), t = S.train[key] || {}, w = Math.floor((lead + d - 1) / 7);
+    weeks[w] = weeks[w] || {a:0, p:0, first:d, last:d, n:0};
+    const wk = weeks[w]; wk.last = d; wk.n++;
+    if(t.a){ A++; wk.a++; } if(t.p){ Pi++; wk.p++; } if(t.a || t.p) active++;
+    cells += `<button class="tc ${(t.a||t.p)?"on":""} ${key===tdy?"today":""}" onclick="cycleTrain('${key}')" aria-label="${d} de ${MESES[mo]}"><span class="n">${d}</span><span class="e">${t.a?"🏋️":""}${t.p?"🧘":""}</span></button>`;
+  }
+  const goalA = Math.round(G.a * dim / 7), goalP = Math.round(G.p * dim / 7);
+  const bar = function(n, goal, cls){ const pct = goal > 0 ? Math.min(100, n / goal * 100) : (n > 0 ? 100 : 0); return `<div class="bar ${cls}"><i style="width:${pct}%"></i></div>`; };
+  let h = `<h2>Treinos</h2>
+  <div class="datebar"><button class="btn" onclick="shiftMonth(-1)" aria-label="Mês anterior">◀</button><div class="mid"><div class="big">${MESES[mo]} ${y}</div><div class="mut">Toque em um dia para marcar</div></div><button class="btn" onclick="shiftMonth(1)" aria-label="Próximo mês">▶</button></div>
+  <div class="card"><div class="cal">${["D","S","T","Q","Q","S","S"].map(function(x){ return `<div class="dow">${x}</div>`; }).join("")}${cells}</div>
+    <div class="mut" style="margin-top:10px">Cada toque muda a marcação: 🏋️ academia, depois 🧘 pilates, depois os dois, depois limpa.</div></div>
+  <h3>Relatório de ${MESES[mo].toLowerCase()}</h3>
+  <div class="stats">
+    <div class="stat"><span>🏋️ Academia</span><b>${A}${G.a ? ` <small>de ${goalA}</small>` : ""}</b></div>
+    <div class="stat"><span>🧘 Pilates</span><b>${Pi}${G.p ? ` <small>de ${goalP}</small>` : ""}</b></div>
+    <div class="stat"><span>Treinos no mês</span><b>${A + Pi}</b></div>
+    <div class="stat"><span>Dias ativos</span><b>${active} <small>de ${dim}</small></b></div>
+  </div>
+  <div class="card"><b>Semana a semana</b>`;
+  weeks.forEach(function(wk, i){
+    if(!wk) return;
+    const ga = Math.ceil(G.a * wk.n / 7), gp = Math.ceil(G.p * wk.n / 7);
+    h += `<div style="margin-top:12px"><div class="row sp"><span>Semana ${i+1} <span class="mut">(${pad(wk.first)}/${pad(mo+1)} a ${pad(wk.last)}/${pad(mo+1)}${wk.n < 7 ? ", parcial" : ""})</span></span></div>
+      <div class="row sp mut" style="margin-top:6px"><span>🏋️ Academia</span><span>${wk.a}${G.a ? " de " + ga : ""}</span></div>${bar(wk.a, ga, "ba")}
+      <div class="row sp mut" style="margin-top:6px"><span>🧘 Pilates</span><span>${wk.p}${G.p ? " de " + gp : ""}</span></div>${bar(wk.p, gp, "bp")}</div>`;
+  });
+  h += `</div>
+  <div class="card"><b>Meta por semana</b><div class="row" style="margin-top:10px;gap:8px">
+    <div style="flex:1"><label class="mut">🏋️ Academia (dias)</label><input style="width:100%" type="number" min="0" max="7" inputmode="numeric" value="${G.a}" onchange="setTrainGoal('a',this.value)"></div>
+    <div style="flex:1"><label class="mut">🧘 Pilates (dias)</label><input style="width:100%" type="number" min="0" max="7" inputmode="numeric" value="${G.p}" onchange="setTrainGoal('p',this.value)"></div></div>
+    <div class="tip">As metas ajustam as barras e os totais do relatório. Semanas parciais usam metas proporcionais.</div></div>`;
+  return h;
+}
+
 function render(){
   document.getElementById("sub").textContent = "Plano de " + N + " dias · " + br(START) + " a " + br(END) + (D.note ? " · " + D.note : "");
   document.getElementById("nav").innerHTML = TABS.map(([k,ic,l]) => `<button class="${k===tab?"on":""}" onclick="go('${k}')"><span class="ic">${ic}</span>${l}</button>`).join("");
-  const v = {hoje:viewHoje, plano:viewPlano, peso:viewPeso, compras:viewCompras, alimentos:viewAlimentos, receitas:viewReceitas}[tab];
+  const v = {hoje:viewHoje, plano:viewPlano, peso:viewPeso, compras:viewCompras, alimentos:viewAlimentos, dicas:viewDicas, treinos:viewTreinos}[tab];
   document.getElementById("view").innerHTML = v();
 }
 render();

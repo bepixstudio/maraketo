@@ -1,6 +1,6 @@
 // Maraketo - guarda o app no aparelho para abrir sem internet.
 // Ao publicar uma nova versão, troque o número em CACHE para forçar a atualização.
-const CACHE = "maraketo-v2";
+const CACHE = "maraketo-v7";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
